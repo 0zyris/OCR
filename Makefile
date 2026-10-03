@@ -1,8 +1,8 @@
 CC = gcc
-CFLAGS = -Wall -Wextra -g 'pkg-config --cflags sdl2 SDL2_image'
-LDLIBS = 'pkg-config --libs sdl2 SDL2_image'
+CFLAGS = -Wall -Wextra -g `pkg-config --cflags sdl2 SDL2_image`
+LDLIBS = `pkg-config --libs sdl2 SDL2_image`
 
-SRC = main.c
+SRC = src/main.c src/image_processing.c
 OBJ = ${SRC:.c=.o}
 
 EXEC = solver

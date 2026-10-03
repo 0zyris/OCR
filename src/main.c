@@ -2,6 +2,7 @@
 #include <err.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
+#include "../include/image_processing.h"
 
 // Fonction pour charger une image dans une SDL_Surface
 SDL_Surface* load_image(const char* path) {
@@ -41,7 +42,16 @@ int main(int argc, char **argv) {
     printf("Image '%s' chargée avec succès.\n", argv[1]);
     printf("Dimensions : %d x %d pixels\n", image->w, image->h);
 
-    // TODO: Implémenter ici la détection de la liste de mots (binarisation, segmentation...)
+    // Application de la binarisation
+    binarize_image(image);
+    printf("Binarisation terminée.\n");
+
+    // Sauvegarde du résultat
+    if (IMG_SavePNG(image, "output_binarized.png") != 0) {
+        printf("Erreur de sauvegarde : %s\n", IMG_GetError());
+    } else {
+        printf("Résultat sauvegardé sous 'output_binarized.png'.\n");
+    }
 
     // Libération de la mémoire et fermeture
     SDL_FreeSurface(image);
