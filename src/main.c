@@ -4,18 +4,20 @@
 #include <SDL2/SDL_image.h>
 #include "../include/image_processing.h"
 
+
 // Fonction pour charger une image dans une SDL_Surface
 SDL_Surface* load_image(const char* path) {
     SDL_Surface* surface = IMG_Load(path);
     if (surface == NULL) {
-        errx(EXIT_FAILURE, "Erreur lors du chargement de l'image : %s", IMG_GetError());
+        errx(EXIT_FAILURE, "Erreur lors du chargement de l'image : %s",
+            IMG_GetError());
     }
     
-    // Conversion de la surface dans un format standard (ex: 32 bits, RGB)
-    // Cela facilite l'itération sur les pixels par la suite
-    SDL_Surface* optimized_surface = SDL_ConvertSurfaceFormat(surface, SDL_PIXELFORMAT_RGB888, 0);
+    SDL_Surface* optimized_surface = SDL_ConvertSurfaceFormat(surface,
+        SDL_PIXELFORMAT_RGB888, 0);
     if (optimized_surface == NULL) {
-        errx(EXIT_FAILURE, "Erreur lors de la conversion de la surface : %s", SDL_GetError());
+        errx(EXIT_FAILURE, "Erreur lors de la conversion de la surface : %s",
+            SDL_GetError());
     }
     
     SDL_FreeSurface(surface);
@@ -24,27 +26,73 @@ SDL_Surface* load_image(const char* path) {
 
 int main(int argc, char **argv) {
     if (argc != 3) {
-        errx(EXIT_FAILURE, "Usage: %s <fichier_image> <mot_ou_option>", argv[0]);
+        errx(EXIT_FAILURE, "Usage: %s <fichier_image> <mot_ou_option>",
+            argv[0]);
     }
 
-    // Initialisation de SDL et SDL_image
-    if (SDL_Init(SDL_INIT_VIDEO) != 0) {
-        errx(EXIT_FAILURE, "Erreur d'initialisation de la SDL : %s", SDL_GetError());
-    }
+    if (SDL_Init(SDL_INIT_VIDEO) != 0) errx(EXIT_FAILURE,
+        "Erreur d'initialisation de la SDL : %s", SDL_GetError());
     
     int img_flags = IMG_INIT_PNG | IMG_INIT_JPG;
     if ((IMG_Init(img_flags) & img_flags) != img_flags) {
-        errx(EXIT_FAILURE, "Erreur d'initialisation de SDL_image : %s", IMG_GetError());
+        errx(EXIT_FAILURE, "Erreur d'initialisation de SDL_image : %s",
+            IMG_GetError());
     }
 
-    // Chargement de l'image
     SDL_Surface* image = load_image(argv[1]);
     printf("Image '%s' chargée avec succès.\n", argv[1]);
     printf("Dimensions : %d x %d pixels\n", image->w, image->h);
 
-    // Application de la binarisation
     binarize_image(image);
     printf("Binarisation terminée.\n");
+
+    // 1. Allocation et calcul des deux histogrammes
+    int *horiz_hist = malloc(image->h * sizeof(int));
+    if (horiz_hist == NULL) errx(EXIT_FAILURE,
+        "Erreur d'allocation mémoire pour l'histogramme horizontal");
+    compute_horizontal_histogram(image, horiz_hist);
+
+    int *vert_hist = malloc(image->w * sizeof(int));
+    if (vert_hist == NULL) errx(EXIT_FAILURE,
+        "Erreur d'allocation mémoire pour l'histogramme vertical");
+    compute_vertical_histogram(image, vert_hist);
+
+    // 2. Détermination de la disposition globale et coupe initiale
+    int b1_xmin, b1_xmax, b1_ymin, b1_ymax;
+    int b2_xmin, b2_xmax, b2_ymin, b2_ymax;
+
+    find_layout_and_blocks(vert_hist, image->w, horiz_hist, image->h, 
+                           &b1_xmin, &b1_xmax, &b1_ymin, &b1_ymax,
+                           &b2_xmin, &b2_xmax, &b2_ymin, &b2_ymax);
+
+    // 3. Ajustement des cadres autour du texte de chaque bloc
+    crop_box(image, &b1_xmin, &b1_xmax, &b1_ymin, &b1_ymax);
+    crop_box(image, &b2_xmin, &b2_xmax, &b2_ymin, &b2_ymax);
+
+    // 4. Identification par superficie (Largeur * Hauteur)
+    long area1 = (long)(b1_xmax - b1_xmin) * (b1_ymax - b1_ymin);
+    long area2 = (long)(b2_xmax - b2_xmin) * (b2_ymax - b2_ymin);
+
+    printf("\n--- Identification des blocs ---\n");
+    if (area1 > area2) {
+        printf("-> Le BLOC 1 est la GRILLE (Bleu)\n");
+        printf("-> Le BLOC 2 est la LISTE DE MOTS (Rouge)\n");
+        draw_rectangle(image, b1_xmin, b1_xmax, b1_ymin, b1_ymax,
+            0, 0, 255); // Bleu
+        draw_rectangle(image, b2_xmin, b2_xmax, b2_ymin, b2_ymax,
+            255, 0, 0); // Rouge
+    } else {
+        printf("-> Le BLOC 2 est la GRILLE (Bleu)\n");
+        printf("-> Le BLOC 1 est la LISTE DE MOTS (Rouge)\n");
+        draw_rectangle(image, b1_xmin, b1_xmax, b1_ymin, b1_ymax,
+            255, 0, 0); // Rouge
+        draw_rectangle(image, b2_xmin, b2_xmax, b2_ymin, b2_ymax,
+            0, 0, 255); // Bleu
+    }
+
+    // 5. Libération des histogrammes
+    free(horiz_hist);
+    free(vert_hist);
 
     // Sauvegarde du résultat
     if (IMG_SavePNG(image, "output_binarized.png") != 0) {
@@ -53,7 +101,6 @@ int main(int argc, char **argv) {
         printf("Résultat sauvegardé sous 'output_binarized.png'.\n");
     }
 
-    // Libération de la mémoire et fermeture
     SDL_FreeSurface(image);
     IMG_Quit();
     SDL_Quit();
