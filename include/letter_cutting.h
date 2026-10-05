@@ -16,7 +16,7 @@ typedef struct {
     int y2;
 } LetterRect;
 
-int detect_grid_lines(SDL_Surface *surface, int w, int h, int *width, int *height, int **hcount, int **wcount);
+int detect_grid_lines(SDL_Surface *surface, int w, int h, int *width, int *height, int *hcount[], int *wcount[]);
 SDL_Surface* cut_letter(SDL_Surface *surface, int x, int y, int width, int height);
 LetterGrid extract_letters(SDL_Surface *surface, SDL_Rect rectangle);
 

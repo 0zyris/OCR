@@ -3,7 +3,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include "../include/image_processing.h"
-
+#include "../include/letter_cutting.h"
 
 // Fonction pour charger une image dans une SDL_Surface
 SDL_Surface* load_image(const char* path) {
@@ -81,7 +81,8 @@ int main(int argc, char **argv) {
             0, 0, 255); // Bleu
         draw_rectangle(image, b2_xmin, b2_xmax, b2_ymin, b2_ymax,
             255, 0, 0); // Rouge
-            int h_lines[1024], w_lines[1024];
+            int *h_lines = malloc(sizeof(int)*1024);
+	    int *w_lines = malloc(sizeof(int)*1024);
             int hcount = 0, wcount = 0;
             if(detect_grid_lines(image, b1_xmax - b1_xmin, b1_ymax - b1_ymin, &wcount, &hcount, &h_lines, &w_lines)){
                 for(int i = 0; i < hcount - 1; i++){
@@ -94,6 +95,8 @@ int main(int argc, char **argv) {
                     }
                 }
             }
+	    free(h_lines);
+	    free(w_lines);
     } else {
         printf("-> Le BLOC 2 est la GRILLE (Bleu)\n");
         printf("-> Le BLOC 1 est la LISTE DE MOTS (Rouge)\n");
@@ -102,7 +105,8 @@ int main(int argc, char **argv) {
         draw_rectangle(image, b2_xmin, b2_xmax, b2_ymin, b2_ymax,
             0, 0, 255); // Bleu
             printf("-> Le BLOC 3 est la LISTE DE MOTS (Vert)\n");
-            int h_lines[1024], w_lines[1024];
+            int *h_lines = malloc(sizeof(int)*2000);
+	    int *w_lines =malloc(sizeof(int)*2000);
             int hcount = 0, wcount = 0;
             if(detect_grid_lines(image, b2_xmax - b2_xmin, b2_ymax - b2_ymin, &wcount, &hcount, &h_lines, &w_lines)){
                 for(int i = 0; i < hcount - 1; i++){
@@ -115,6 +119,8 @@ int main(int argc, char **argv) {
                     }
                 }
             }
+	    free(h_lines);
+	    free(w_lines);
         }
     }
 

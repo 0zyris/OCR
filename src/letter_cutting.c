@@ -4,7 +4,7 @@
 #include <SDL2/SDL_image.h>
 #include "../include/letter_cutting.h"
 
-int detect_grid_lines(SDL_Surface *surface, int w, int h, int *width, int *height, int **hcount, int **wcount)
+int detect_grid_lines(SDL_Surface *surface, int w, int h, int *width, int *height, int *hcount[], int *wcount[])
 {
     if (SDL_MUSTLOCK(surface)) SDL_LockSurface(surface);
     // Détection des lignes verticales
