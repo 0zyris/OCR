@@ -4,13 +4,14 @@
 #include <SDL2/SDL_image.h>
 #include "../include/letter_cutting.h"
 
-int detect_grid_lines(SDL_Surface *surface, int *width, int *height, int *hcount, int *wcount)
+int detect_grid_lines(SDL_Surface *surface, int w, int h, int *width, int *height, int **hcount, int **wcount)
 {
+    if (SDL_MUSTLOCK(surface)) SDL_LockSurface(surface);
     // Détection des lignes verticales
-    for(int i = 0; i < surface->w; i++)
+    for(int i = 0; i < w; i++)
     {
         int black = 0;
-        for(int y = 0; y < surface->h; y++)
+        for(int y = 0; y < h; y++)
         {
             Uint32 pixel = get_pixel(surface, i, y);
             if(pixel == 0)
@@ -18,17 +19,17 @@ int detect_grid_lines(SDL_Surface *surface, int *width, int *height, int *hcount
                 black++;
             }
         }
-        if(black == surface->h)
+        if(black == h)
         {
-            w_lines[*wcount] = i;
+            *(*w_lines + *wcount) = i;
             (*wcount)++;
         }
     }
     // Détection des lignes horizontales
-    for(int j = 0; j < surface->h; j++)
+    for(int j = 0; j < h; j++)
     {
         int black = 0;
-        for(int x = 0; x < surface->w; x++)
+        for(int x = 0; x < w; x++)
         {
             Uint32 pixel = get_pixel(surface, x, j);
             if(pixel == 0)
@@ -36,17 +37,19 @@ int detect_grid_lines(SDL_Surface *surface, int *width, int *height, int *hcount
                 black++;
             }
         }
-        if(black == surface->w)
+        if(black == w)
         {
-            h_lines[*hcount] = j;
+            *(*h_lines + *hcount) = j;
             (*hcount)++;
         }
     }
+    if (SDL_MUSTLOCK(surface)) SDL_UnlockSurface(surface);
     return (*hcount >= 2 && *wcount >= 2);
 }
 
 SDL_Surface* cut_letter(SDL_Surface *surface, int x, int y, int width, int height)
 {
+    if (SDL_MUSTLOCK(surface)) SDL_LockSurface(surface);
     SDL_Surface *letter_surface = SDL_CreateRGBSurface(0, width, height, surface->format->BitsPerPixel, surface->format->Rmask, surface->format->Gmask, surface->format->Bmask, surface->format->Amask);
     if(letter_surface == NULL)
     {
@@ -54,16 +57,18 @@ SDL_Surface* cut_letter(SDL_Surface *surface, int x, int y, int width, int heigh
     }
     SDL_Rect rectangle = {x, y, width, height};
     SDL_BlitSurface(surface, &rectangle, letter_surface, NULL);
+    if (SDL_MUSTLOCK(surface)) SDL_UnlockSurface(surface);
     return letter_surface;
 }
 
 LetterGrid extract_letters(SDL_Surface *surface, SDL_Rect rectangle)
 {
+    if (SDL_MUSTLOCK(surface)) SDL_LockSurface(surface);
     LetterGrid grid;
     SDL_Surface *grid_surface = cut_letter(surface, rectangle.x, rectangle.y, rectangle.w, rectangle.h);
     int h_lines[1024], w_lines[1024];
     int hcount = 0, wcount = 0;
-    if(detect_grid_lines(grid_surface, &wcount, &hcount, h_lines, w_lines))
+    if(detect_grid_lines(grid_surface, rectangle.w, rectangle.h, &wcount, &hcount, &h_lines, &w_lines))
     {
         //cas avec grille
         int rows = hcount - 1;
@@ -89,6 +94,7 @@ LetterGrid extract_letters(SDL_Surface *surface, SDL_Rect rectangle)
         //cas sans grille
     }
     SDL_FreeSurface(grid);
+    if (SDL_MUSTLOCK(surface)) SDL_UnlockSurface(surface);
     return letters;
 }
 
