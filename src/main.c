@@ -88,6 +88,17 @@ int main(int argc, char **argv) {
             255, 0, 0); // Rouge
         draw_rectangle(image, b2_xmin, b2_xmax, b2_ymin, b2_ymax,
             0, 0, 255); // Bleu
+        }
+        int h_lines[1024], w_lines[1024];
+        int hcount = 0, wcount = 0;
+        if(detect_grid_lines(image, &wcount, &hcount, h_lines, w_lines)){
+            for(int i = 0; i < rows; i++){
+                grid.cells[i] = malloc(cols * sizeof(SDL_Surface*));
+                for(int y = 0; y < cols; y++){
+                        draw_rectangle(image, x1, y1, x2 - x1, y2 - y1, 0, 255, 0); // Vert
+                }
+            }
+        }
     }
 
     // 5. Libération des histogrammes
