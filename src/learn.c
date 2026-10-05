@@ -1,5 +1,27 @@
 #include "learn.h"
 
+double random_weight(){
+    //génère une valeur aléatoire entre -0.5 et 0.5
+    return ((double)rand() / RAND_MAX) - 0.5;
+}
+
+Network *network_init(int input_size, int hidden_size, int output_size){
+    Network *network = malloc(sizeof(Network));
+
+    network->W1 = create_matrix(input_size, hidden_size);
+    network->b1 = create_matrix(1, hidden_size);
+    network->W2 = create_matrix(hidden_size, output_size);
+    network->b2 = create_matrix(1, output_size);
+
+    //On définit des poids aléatoires
+    for (int i = 0; i < net->W1->rows * network->W1->cols; i++)
+        network->W1->data[i] = random_weight();
+    for (int i = 0; i < net->W2->rows * network->W2->cols; i++)
+        network->W2->data[i] = random_weight();
+
+    return network;
+}
+
 
 Matrix *linear_forward(Matrix *X, Matrix *W, Matrix *b){
     Matrix *z1 = mult_matrix(X,W);

@@ -1,4 +1,4 @@
-#inlude "matrix.h"
+#include "matrix.h"
 
 
 Matrix *create_matrix(int rows, int cols){
@@ -64,6 +64,8 @@ Matrix *sub_matrix(Matrix *m1, Matrix *m2){
         return NULL;
     }
 
+    int max_cols = m1->cols;
+
     Matrix *result = create_matrix(m1->rows, m1->cols);
 
     for (int i = 0; i< m1->rows;i++){
@@ -102,7 +104,38 @@ Matrix *scalar_mult_matrix(Matrix *m, double scalar){
     Matrix *result = create_matrix(m->rows, m->cols);
     for (int i = 0; i< result->rows;i++){
         for (int j=0; j< result->cols;j++){
-            result->data[i*m->rows + j] = m->data[i*m->rows + j] * scalar;
+            result->data[i*m->cols + j] = m->data[i*m->cols + j] * scalar;
+        }
+    }
+    return result;
+}
+
+Matrix *mult_by_ele_matrix(Matrix *m1, Matrix *m2){
+//Multiplie éléments par éléments -> Doivent avoir même dimensions
+ 
+    if (m1->rows != m2->rows || m1->cols != m2->cols){
+        return NULL;
+    }
+    Matrix *result = create_matrix(m1->rows,m2->cols);
+    int max_cols = m1->cols;
+ 
+    for (int i = 0; i< m1->rows;i++){
+        for (int j=0; j< m1->cols;j++){
+            result->data[i*max_cols + j] = m1->data[i*max_cols + j] * m2->data[i*max_cols +j];
+        }
+    }
+    return result;
+}
+
+Matrix *fct_matrix(Matrix *m1, double (*fct)(double)){
+//Applique une fonction à tous les éléments d'une matrice
+ 
+    Matrix *result = create_matrix(m1->rows,m1->cols);
+    int max_cols = m1->cols;
+ 
+    for (int i = 0; i< m1->rows;i++){
+        for (int j=0; j< m1->cols;j++){
+            result->data[i*max_cols + j] = fct(m1->data[i*max_cols + j]);
         }
     }
     return result;
