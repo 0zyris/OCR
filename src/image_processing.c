@@ -173,8 +173,8 @@ void find_layout_and_blocks(int *vert_hist, int width, int *horiz_hist,
             cur_x_len++;
         } else {
             if (cur_x_len > max_x_width) {
-                max_x_width = cur_x_len; 
-                max_x_start = cur_x_start; 
+                max_x_width = cur_x_len;
+                max_x_start = cur_x_start;
             }
             cur_x_len = 0;
         }
@@ -242,4 +242,56 @@ void crop_box(SDL_Surface *surface, int *xmin, int *xmax, int *ymin,
     }
 
     if (SDL_MUSTLOCK(surface)) SDL_UnlockSurface(surface);
+}
+
+// Isole chaque mot de la liste et l'encadre en vert au plus près
+void segment_word_list(SDL_Surface *surface, int xmin, int xmax, int ymin,
+                       int ymax) {
+    int in_word = 0;
+    int word_ymin = 0;
+    int threshold = 2; // Tolérance
+
+    for (int y = ymin; y <= ymax; y++) {
+        int black_pixels = 0;
+        
+        if (SDL_MUSTLOCK(surface)) SDL_LockSurface(surface);
+        Uint32 *pixels = (Uint32 *)surface->pixels;
+        SDL_PixelFormat *format = surface->format;
+        Uint8 r, g, b;
+
+        for (int x = xmin; x <= xmax; x++) {
+            if (x >= 0 && x < surface->w && y >= 0 && y < surface->h) {
+                SDL_GetRGB(pixels[y * surface->w + x], format, &r, &g, &b);
+                if (r == 0) black_pixels++;
+            }
+        }
+        if (SDL_MUSTLOCK(surface)) SDL_UnlockSurface(surface);
+
+        if (black_pixels > threshold) {
+            if (!in_word) {
+                in_word = 1;
+                word_ymin = y;
+            }
+        } else {
+            if (in_word) {
+                in_word = 0;
+                int w_xmin = xmin, w_xmax = xmax;
+                int w_ymin = word_ymin, w_ymax = y - 1;
+                
+                // Resserre le cadre vert autour du mot précis
+                crop_box(surface, &w_xmin, &w_xmax, &w_ymin, &w_ymax);
+                draw_rectangle(surface, w_xmin, w_xmax, w_ymin, w_ymax,
+                               0, 255, 0);
+            }
+        }
+    }
+    
+    // Dernier mot
+    if (in_word) {
+        int w_xmin = xmin, w_xmax = xmax;
+        int w_ymin = word_ymin, w_ymax = ymax;
+        
+        crop_box(surface, &w_xmin, &w_xmax, &w_ymin, &w_ymax);
+        draw_rectangle(surface, w_xmin, w_xmax, w_ymin, w_ymax, 0, 255, 0);
+    }
 }

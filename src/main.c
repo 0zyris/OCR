@@ -76,18 +76,20 @@ int main(int argc, char **argv) {
     printf("\n--- Identification des blocs ---\n");
     if (area1 > area2) {
         printf("-> Le BLOC 1 est la GRILLE (Bleu)\n");
-        printf("-> Le BLOC 2 est la LISTE DE MOTS (Rouge)\n");
+        printf("-> Le BLOC 2 est la LISTE DE MOTS (Rouge/Vert)\n");
         draw_rectangle(image, b1_xmin, b1_xmax, b1_ymin, b1_ymax,
-            0, 0, 255); // Bleu
+            0, 0, 255);
         draw_rectangle(image, b2_xmin, b2_xmax, b2_ymin, b2_ymax,
-            255, 0, 0); // Rouge
+            255, 0, 0);
+        segment_word_list(image, b2_xmin, b2_xmax, b2_ymin, b2_ymax);
     } else {
         printf("-> Le BLOC 2 est la GRILLE (Bleu)\n");
-        printf("-> Le BLOC 1 est la LISTE DE MOTS (Rouge)\n");
+        printf("-> Le BLOC 1 est la LISTE DE MOTS (Rouge/Vert)\n");
         draw_rectangle(image, b1_xmin, b1_xmax, b1_ymin, b1_ymax,
-            255, 0, 0); // Rouge
+            255, 0, 0);
         draw_rectangle(image, b2_xmin, b2_xmax, b2_ymin, b2_ymax,
-            0, 0, 255); // Bleu
+            0, 0, 255);
+        segment_word_list(image, b1_xmin, b1_xmax, b1_ymin, b1_ymax);
     }
 
     // 5. Libération des histogrammes
