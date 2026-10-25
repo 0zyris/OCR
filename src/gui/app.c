@@ -142,6 +142,36 @@ static void on_window_destroy(GtkWidget *widget,
     g_free(data);
 }
 
+
+
+static void on_grayscale(GtkWidget *button, gpointer user_data)
+{
+    (void)button;
+
+    AppData *data = user_data;
+
+    // Aucune image chargée.
+    if (data->surface == NULL)
+        return;
+
+    // Modifier les pixels directement.
+    grayscale_image(data->surface);
+
+    // Convertir la surface modifiée pour GTK.
+    GdkPixbuf *pixbuf = surface_to_pixbuf(data->surface);
+
+    if (pixbuf == NULL)
+        return;
+
+    // Actualiser l'image dans la fenêtre.
+    gtk_image_set_from_pixbuf(
+        GTK_IMAGE(data->image_widget), pixbuf);
+
+    g_object_unref(pixbuf);
+}
+
+
+
 static void activate(GtkApplication *app, gpointer user_data)
 {
     (void)user_data;
@@ -182,6 +212,16 @@ static void activate(GtkApplication *app, gpointer user_data)
     g_signal_connect(
         button, "clicked",
         G_CALLBACK(on_load_image), data);
+
+    GtkWidget *gray_button = gtk_button_new_with_label(
+        "Grayscale");
+
+    gtk_box_pack_start(
+        GTK_BOX(box), gray_button, FALSE, FALSE, 0);
+
+    g_signal_connect(
+        gray_button, "clicked",
+        G_CALLBACK(on_grayscale), data);
 
     g_signal_connect(
         data->window, "destroy",
