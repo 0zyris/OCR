@@ -173,8 +173,8 @@ void find_layout_and_blocks(int *vert_hist, int width, int *horiz_hist,
             cur_x_len++;
         } else {
             if (cur_x_len > max_x_width) {
-                max_x_width = cur_x_len; 
-                max_x_start = cur_x_start; 
+                max_x_width = cur_x_len;
+                max_x_start = cur_x_start;
             }
             cur_x_len = 0;
         }
@@ -242,4 +242,201 @@ void crop_box(SDL_Surface *surface, int *xmin, int *xmax, int *ymin,
     }
 
     if (SDL_MUSTLOCK(surface)) SDL_UnlockSurface(surface);
+}
+
+// Isole chaque mot de la liste et l'encadre en vert au plus près
+void segment_word_list(SDL_Surface *surface, int xmin, int xmax, int ymin,
+                       int ymax, int grid) {
+    int in_word = 0;
+    int word_ymin = 0;
+    int threshold = 2; // Tolérance
+
+    for (int y = ymin; y <= ymax; y++) {
+        int black_pixels = 0;
+        
+        if (SDL_MUSTLOCK(surface)) SDL_LockSurface(surface);
+        Uint32 *pixels = (Uint32 *)surface->pixels;
+        SDL_PixelFormat *format = surface->format;
+        Uint8 r, g, b;
+
+        for (int x = xmin; x <= xmax; x++) {
+            if (x >= 0 && x < surface->w && y >= 0 && y < surface->h) {
+                SDL_GetRGB(pixels[y * surface->w + x], format, &r, &g, &b);
+                if (r == 0) black_pixels++;
+            }
+        }
+        if (SDL_MUSTLOCK(surface)) SDL_UnlockSurface(surface);
+
+        if (black_pixels > threshold) {
+            if (!in_word) {
+                in_word = 1;
+                word_ymin = y;
+            }
+        } else {
+            if (in_word) {
+                in_word = 0;
+                int w_xmin = xmin, w_xmax = xmax;
+                int w_ymin = word_ymin, w_ymax = y - 1;
+                
+                // Resserre le cadre vert autour du mot précis
+                crop_box(surface, &w_xmin, &w_xmax, &w_ymin, &w_ymax);
+                w_xmin--, w_ymin--; 
+                w_xmax++, w_ymax++; // Ajout d'une marge de 1 pixel
+                if(!grid) {
+                    draw_rectangle(surface, w_xmin, w_xmax, w_ymin, w_ymax, 0, 255, 0);
+                }
+                segment_letters(surface, w_xmin, w_xmax, w_ymin, w_ymax, grid);
+            }
+        }
+    }
+    
+    // Dernier mot
+    if (in_word) {
+        int w_xmin = xmin, w_xmax = xmax;
+        int w_ymin = word_ymin, w_ymax = ymax;
+        
+        crop_box(surface, &w_xmin, &w_xmax, &w_ymin, &w_ymax);
+        w_xmin--, w_ymin--; 
+        w_xmax++, w_ymax++; // Ajout d'une marge de 1 pixel
+        if(!grid) {
+            draw_rectangle(surface, w_xmin, w_xmax, w_ymin, w_ymax, 0, 255, 0);
+        }
+        segment_letters(surface, w_xmin, w_xmax, w_ymin, w_ymax, grid);
+    }
+}
+
+// Isoler les lettres de la grille et les encadrer en violet au plus près
+void segment_letters(SDL_Surface *surface, int xmin, int xmax, int ymin,
+                          int ymax, int grid) {
+    int in_letter = 0;
+    int letter_xmin = 0;
+    int threshold = 2; // Tolérance
+    for (int x = xmin; x <= xmax; x++) {
+        int black_pixels = 0;
+
+        if (SDL_MUSTLOCK(surface)) SDL_LockSurface(surface);
+        Uint32 *pixels = (Uint32 *)surface->pixels;
+        SDL_PixelFormat *format = surface->format;
+        Uint8 r, g, b;
+        for (int y = ymin; y <= ymax; y++) {
+            if (x >= 0 && x < surface->w && y >= 0 && y < surface->h) {
+                SDL_GetRGB(pixels[y * surface->w + x], format, &r, &g, &b);
+                if (r == 0) black_pixels++;
+            }
+        }
+        if (SDL_MUSTLOCK(surface)) SDL_UnlockSurface(surface);
+
+        if (black_pixels > threshold) {
+            if (!in_letter) {
+                in_letter = 1;
+                letter_xmin = x;
+            }
+        } else {
+            if (in_letter) {
+                in_letter = 0;
+                int l_xmin = letter_xmin, l_xmax = x - 1;
+                int l_ymin = ymin, l_ymax = ymax;
+                crop_box(surface, &l_xmin, &l_xmax, &l_ymin, &l_ymax);
+                if(grid) {
+                    draw_rectangle(surface, l_xmin, l_xmax, l_ymin, l_ymax,
+                               128, 128, 0);
+                } else {
+                    draw_rectangle(surface, l_xmin, l_xmax, l_ymin, l_ymax,
+                               128, 0, 128);
+                }
+            }
+        }
+    }
+    // Dernière lettre
+    if (in_letter) {
+        int l_xmin = letter_xmin, l_xmax = xmax;
+        int l_ymin = ymin, l_ymax = ymax;
+        crop_box(surface, &l_xmin, &l_xmax, &l_ymin, &l_ymax);
+        if(grid) {
+            draw_rectangle(surface, l_xmin, l_xmax, l_ymin, l_ymax,
+                        128, 128, 0);
+        } else {
+            draw_rectangle(surface, l_xmin, l_xmax, l_ymin, l_ymax,
+                        128, 0, 128);
+        }
+    }
+}
+
+// test si le mot mélé possède une grille en utilisant l'histogramme
+int has_grid(int xmin, int xmax, int ymin, int ymax, int* vert_hist, int* horiz_hist)
+{
+    int width = xmax - xmin + 1;
+    int height = ymax - ymin + 1;
+    int vertical_threshold = (height * 8) / 10;
+    int horizontal_threshold = (width * 8) / 10;
+    int vertical_lines = 0;
+    int horizontal_lines = 0;
+    int in_vertical_line = 0;
+    for (int x = xmin; x <= xmax; x++) {
+        if (vert_hist[x] >= vertical_threshold) {
+            if (!in_vertical_line) {
+                vertical_lines++;
+                in_vertical_line = 1;
+            }
+        } else {
+            in_vertical_line = 0;
+        }
+    }
+    int in_horizontal_line = 0;
+    for (int y = ymin; y <= ymax; y++) {
+        if (horiz_hist[y] >= horizontal_threshold) {
+            if (!in_horizontal_line) {
+                horizontal_lines++;
+                in_horizontal_line = 1;
+            }
+        } else {
+            in_horizontal_line = 0;
+        }
+    }
+    return (vertical_lines >= 2 && horizontal_lines >= 2);
+}
+
+// Isole les lettres de la grille et les encadre en ...
+void segment_grid_letters_with_histogram(SDL_Surface *surface, int xmin, int xmax, int ymin, int ymax, int* vert_hist, int* horiz_hist) {
+    if (!has_grid(xmin, xmax, ymin, ymax, vert_hist, horiz_hist)) {
+        segment_word_list(surface, xmin, xmax, ymin, ymax, 1);
+    } else {
+        //cas avec du bruit ou pixel en plus
+        const double threshold = 0.65;
+        const int LINE_GAP = 5;
+
+        int MAX_LINES = 256;
+        int vert_lines[MAX_LINES];
+        int horiz_lines[MAX_LINES];
+        int nb_vert = 0;
+        int nb_horiz = 0;
+
+        int vert_limit = (int)((ymax-ymin+1)*threshold);
+        int horiz_limit = (int)((xmax-xmin+1)*threshold);
+        for (int x = xmin; x <= xmax; x++) {
+            if (vert_hist[x] >= vert_limit) {
+                if (nb_vert == 0 || x - vert_lines[nb_vert - 1] > LINE_GAP) {
+                    vert_lines[nb_vert++] = x;
+                }
+            }
+        }
+        for (int y = ymin; y <= ymax; y++) {
+            if (horiz_hist[y] >= horiz_limit) {
+                if (nb_horiz == 0 || y - horiz_lines[nb_horiz - 1] > LINE_GAP) {
+                    horiz_lines[nb_horiz++] = y;
+                }
+            }
+        }
+        for (int row = 0; row < nb_horiz - 1; row++) {
+            for (int col = 0; col < nb_vert - 1; col++) {
+                int l_xmin = vert_lines[col] + 1;
+                int l_xmax = vert_lines[col + 1] - 1;
+                int l_ymin = horiz_lines[row] + 1;
+                int l_ymax = horiz_lines[row + 1] - 1;
+                crop_box(surface, &l_xmin, &l_xmax, &l_ymin, &l_ymax);
+                if(l_xmin>l_xmax || l_ymin>l_ymax) continue;
+                draw_rectangle(surface, l_xmin, l_xmax, l_ymin, l_ymax, 128, 128, 0);
+            }
+        }
+    }
 }

@@ -3,7 +3,7 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include "../include/image_processing.h"
-#include "../include/letter_cutting.h"
+
 
 // Fonction pour charger une image dans une SDL_Surface
 SDL_Surface* load_image(const char* path) {
@@ -76,52 +76,22 @@ int main(int argc, char **argv) {
     printf("\n--- Identification des blocs ---\n");
     if (area1 > area2) {
         printf("-> Le BLOC 1 est la GRILLE (Bleu)\n");
-        printf("-> Le BLOC 2 est la LISTE DE MOTS (Rouge)\n");
+        printf("-> Le BLOC 2 est la LISTE DE MOTS (Rouge/Vert)\n");
+        segment_grid_letters_with_histogram(image, b1_xmin, b1_xmax, b1_ymin, b1_ymax, vert_hist, horiz_hist);
         draw_rectangle(image, b1_xmin, b1_xmax, b1_ymin, b1_ymax,
-            0, 0, 255); // Bleu
+            0, 0, 255);
         draw_rectangle(image, b2_xmin, b2_xmax, b2_ymin, b2_ymax,
-            255, 0, 0); // Rouge
-            int *h_lines = malloc(sizeof(int)*1024);
-	    int *w_lines = malloc(sizeof(int)*1024);
-            int hcount = 0, wcount = 0;
-            if(detect_grid_lines(image, b1_xmax - b1_xmin, b1_ymax - b1_ymin, &wcount, &hcount, &h_lines, &w_lines)){
-                for(int i = 0; i < hcount - 1; i++){
-                    for(int y = 0; y < wcount - 1; y++){
-                        int x1 = w_lines[y];
-                        int x2 = w_lines[y + 1];
-                        int y1 = h_lines[i];
-                        int y2 = h_lines[i + 1];
-                        draw_rectangle(image, x1, y1, x2 - x1, y2 - y1, 0, 255, 0); // Vert
-                    }
-                }
-            }
-	    free(h_lines);
-	    free(w_lines);
+            255, 0, 0);
+        segment_word_list(image, b2_xmin, b2_xmax, b2_ymin, b2_ymax, 0);
     } else {
         printf("-> Le BLOC 2 est la GRILLE (Bleu)\n");
-        printf("-> Le BLOC 1 est la LISTE DE MOTS (Rouge)\n");
+        printf("-> Le BLOC 1 est la LISTE DE MOTS (Rouge/Vert)\n");
+        segment_grid_letters_with_histogram(image, b2_xmin, b2_xmax, b2_ymin, b2_ymax, vert_hist, horiz_hist);
         draw_rectangle(image, b1_xmin, b1_xmax, b1_ymin, b1_ymax,
-            255, 0, 0); // Rouge
+            255, 0, 0);
         draw_rectangle(image, b2_xmin, b2_xmax, b2_ymin, b2_ymax,
-            0, 0, 255); // Bleu
-            printf("-> Le BLOC 3 est la LISTE DE MOTS (Vert)\n");
-            int *h_lines = malloc(sizeof(int)*2000);
-	    int *w_lines =malloc(sizeof(int)*2000);
-            int hcount = 0, wcount = 0;
-            if(detect_grid_lines(image, b2_xmax - b2_xmin, b2_ymax - b2_ymin, &wcount, &hcount, &h_lines, &w_lines)){
-                for(int i = 0; i < hcount - 1; i++){
-                    for(int y = 0; y < wcount - 1; y++){
-                        int x1 = w_lines[y];
-                        int x2 = w_lines[y + 1];
-                        int y1 = h_lines[i];
-                        int y2 = h_lines[i + 1];
-                        draw_rectangle(image, x1, y1, x2 - x1, y2 - y1, 0, 255, 0); // Vert
-                    }
-                }
-            }
-	    free(h_lines);
-	    free(w_lines);
-        }
+            0, 0, 255);
+        segment_word_list(image, b1_xmin, b1_xmax, b1_ymin, b1_ymax, 0);
     }
 
     // 5. Libération des histogrammes
