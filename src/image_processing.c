@@ -282,9 +282,7 @@ void segment_word_list(SDL_Surface *surface, int xmin, int xmax, int ymin,
                 crop_box(surface, &w_xmin, &w_xmax, &w_ymin, &w_ymax);
                 w_xmin--, w_ymin--; 
                 w_xmax++, w_ymax++; // Ajout d'une marge de 1 pixel
-                if(!grid) {
-                    draw_rectangle(surface, w_xmin, w_xmax, w_ymin, w_ymax, 0, 255, 0);
-                }
+                draw_rectangle(surface, w_xmin, w_xmax, w_ymin, w_ymax, 0, 255, 0);
                 segment_letters(surface, w_xmin, w_xmax, w_ymin, w_ymax, grid);
             }
         }
@@ -396,6 +394,7 @@ int has_grid(int xmin, int xmax, int ymin, int ymax, int* vert_hist, int* horiz_
     return (vertical_lines >= 2 && horizontal_lines >= 2);
 }
 
+//calcul l'épesseur max du bord de la grille
 int compute_cell_margin(int xmin, int xmax, int ymin, int ymax, int *vert_hist, int *horiz_hist, double threshold) {
     int vert_limit = (int)((ymax-ymin+1)*threshold);
     int horiz_limit = (int)((xmax-xmin+1)*threshold);
@@ -430,10 +429,29 @@ int compute_cell_margin(int xmin, int xmax, int ymin, int ymax, int *vert_hist, 
     return max_thickness+1;
 }
 
-// Isole les lettres de la grille et les encadre en ...
+//permet d'enlever le vert dans le cas sans grille
+void remove_green(SDL_Surface *surface, int xmin, int xmax, int ymin, int ymax) {
+    if (SDL_MUSTLOCK(surface)) SDL_LockSurface(surface);
+    Uint32 *pixels = (Uint32 *)surface->pixels;
+    SDL_PixelFormat *format = surface->format;
+    Uint32 green = SDL_MapRGB(format, 0, 255, 0);
+    Uint32 white = SDL_MapRGB(format, 255, 255, 255);
+    for (int y = ymin; y <= ymax; y++) {
+        for (int x = xmin; x <= xmax; x++) {
+            if (pixels[y * surface->w + x] == green) {
+                pixels[y * surface->w + x] = white;
+            }
+        }
+    }
+
+    if (SDL_MUSTLOCK(surface)) SDL_UnlockSurface(surface);
+}
+
+// Isole les lettres de la grille et les encadre en jaune
 void segment_grid_letters_with_histogram(SDL_Surface *surface, int xmin, int xmax, int ymin, int ymax, int* vert_hist, int* horiz_hist) {
     if (!has_grid(xmin, xmax, ymin, ymax, vert_hist, horiz_hist)) {
         segment_word_list(surface, xmin, xmax, ymin, ymax, 1);
+        remove_green(surface, xmin-1, xmax+1, ymin-1, ymax+1); //mesure temporaire (normalement)
     } else {
         //cas avec du bruit ou pixel en plus
         const double threshold = 0.65;
