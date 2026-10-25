@@ -396,6 +396,40 @@ int has_grid(int xmin, int xmax, int ymin, int ymax, int* vert_hist, int* horiz_
     return (vertical_lines >= 2 && horizontal_lines >= 2);
 }
 
+int compute_cell_margin(int xmin, int xmax, int ymin, int ymax, int *vert_hist, int *horiz_hist, double threshold) {
+    int vert_limit = (int)((ymax-ymin+1)*threshold);
+    int horiz_limit = (int)((xmax-xmin+1)*threshold);
+    int max_thickness = 0;
+    int thickness = 0;
+    for (int x = xmin; x <= xmax; x++) {
+        if (vert_hist[x] >= vert_limit) {
+            thickness++;
+        }
+        else {
+            if (thickness > max_thickness)
+                max_thickness = thickness;
+
+            thickness = 0;
+        }
+    }
+    if (thickness > max_thickness)
+        max_thickness = thickness;
+    thickness = 0;
+    for (int y = ymin; y <= ymax; y++) {
+        if (horiz_hist[y] >= horiz_limit) {
+            thickness++;
+        }
+        else {
+            if (thickness > max_thickness)
+                max_thickness = thickness;
+            thickness = 0;
+        }
+    }
+    if (thickness > max_thickness)
+        max_thickness = thickness;
+    return max_thickness+1;
+}
+
 // Isole les lettres de la grille et les encadre en ...
 void segment_grid_letters_with_histogram(SDL_Surface *surface, int xmin, int xmax, int ymin, int ymax, int* vert_hist, int* horiz_hist) {
     if (!has_grid(xmin, xmax, ymin, ymax, vert_hist, horiz_hist)) {
@@ -404,7 +438,7 @@ void segment_grid_letters_with_histogram(SDL_Surface *surface, int xmin, int xma
         //cas avec du bruit ou pixel en plus
         const double threshold = 0.65;
         const int LINE_GAP = 5;
-        const int CELL_MARGIN = 5; //nombre de pixel à retirer au bord
+        const int CELL_MARGIN = compute_cell_margin(xmin, xmax, ymin, ymax, vert_hist, horiz_hist, threshold); //nombre de pixel à retirer au bord
         int MAX_LINES = 256;
         int vert_lines[MAX_LINES];
         int horiz_lines[MAX_LINES];
@@ -439,7 +473,3 @@ void segment_grid_letters_with_histogram(SDL_Surface *surface, int xmin, int xma
         }
     }
 }
-
-/*chose à faire
-- créer une fonction qui calcule CELL_MARGIN
-*/
