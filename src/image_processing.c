@@ -404,13 +404,12 @@ void segment_grid_letters_with_histogram(SDL_Surface *surface, int xmin, int xma
         //cas avec du bruit ou pixel en plus
         const double threshold = 0.65;
         const int LINE_GAP = 5;
-
+        const int CELL_MARGIN = 5; //nombre de pixel à retirer au bord
         int MAX_LINES = 256;
         int vert_lines[MAX_LINES];
         int horiz_lines[MAX_LINES];
         int nb_vert = 0;
         int nb_horiz = 0;
-
         int vert_limit = (int)((ymax-ymin+1)*threshold);
         int horiz_limit = (int)((xmax-xmin+1)*threshold);
         for (int x = xmin; x <= xmax; x++) {
@@ -429,10 +428,10 @@ void segment_grid_letters_with_histogram(SDL_Surface *surface, int xmin, int xma
         }
         for (int row = 0; row < nb_horiz - 1; row++) {
             for (int col = 0; col < nb_vert - 1; col++) {
-                int l_xmin = vert_lines[col] + 1;
-                int l_xmax = vert_lines[col + 1] - 1;
-                int l_ymin = horiz_lines[row] + 1;
-                int l_ymax = horiz_lines[row + 1] - 1;
+                int l_xmin = vert_lines[col] + CELL_MARGIN;
+                int l_xmax = vert_lines[col + 1] - CELL_MARGIN;
+                int l_ymin = horiz_lines[row] + CELL_MARGIN;
+                int l_ymax = horiz_lines[row + 1] - CELL_MARGIN;
                 crop_box(surface, &l_xmin, &l_xmax, &l_ymin, &l_ymax);
                 if(l_xmin>l_xmax || l_ymin>l_ymax) continue;
                 draw_rectangle(surface, l_xmin, l_xmax, l_ymin, l_ymax, 128, 128, 0);
@@ -440,3 +439,7 @@ void segment_grid_letters_with_histogram(SDL_Surface *surface, int xmin, int xma
         }
     }
 }
+
+/*chose à faire
+- créer une fonction qui calcule CELL_MARGIN
+*/
