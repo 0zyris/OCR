@@ -1,6 +1,7 @@
 
 #include <gtk/gtk.h>
-#include <stdint.h>
+#include <SDL2/SDL.h>
+#include <stddef.h>
 #include <stdio.h>
 
 #include "../image/image.h"
@@ -10,45 +11,55 @@ typedef struct
 {
     GtkWidget *window;
     GtkWidget *image_widget;
-    Image *image;
+    SDL_Surface *surface;
 } AppData;
 
-static GdkPixbuf *image_to_pixbuf(const Image *image)
+static GdkPixbuf *surface_to_pixbuf(SDL_Surface *surface)
 {
-    if (image == NULL)
-        return NULL;
-
-    if (image->width > G_MAXINT / 3 ||
-        image->height > G_MAXINT)
+    if (surface == NULL || surface->format->BytesPerPixel != 4)
         return NULL;
 
     GdkPixbuf *pixbuf = gdk_pixbuf_new(
-        GDK_COLORSPACE_RGB,
-        FALSE,
-        8,
-        (int)image->width,
-        (int)image->height);
+        GDK_COLORSPACE_RGB, FALSE, 8,
+        surface->w, surface->h);
 
     if (pixbuf == NULL)
         return NULL;
 
+    if (SDL_MUSTLOCK(surface) && SDL_LockSurface(surface) != 0)
+    {
+        g_object_unref(pixbuf);
+        return NULL;
+    }
+
     guchar *data = gdk_pixbuf_get_pixels(pixbuf);
     int stride = gdk_pixbuf_get_rowstride(pixbuf);
 
-    for (size_t y = 0; y < image->height; y++)
+    for (int y = 0; y < surface->h; y++)
     {
-        guchar *row = data + y * (size_t)stride;
+        const Uint8 *src_row =
+            (const Uint8 *)surface->pixels + y * surface->pitch;
 
-        for (size_t x = 0; x < image->width; x++)
+        guchar *dst_row = data + (size_t)y * (size_t)stride;
+
+        for (int x = 0; x < surface->w; x++)
         {
-            Pixel pixel =
-                image->pixels[y * image->width + x];
+            Uint32 pixel;
+            Uint8 r, g, b;
 
-            row[x * 3] = pixel.r;
-            row[x * 3 + 1] = pixel.g;
-            row[x * 3 + 2] = pixel.b;
+            const Uint32 *src_pixel = (const Uint32 *)src_row;
+            pixel = src_pixel[x];
+
+            SDL_GetRGB(pixel, surface->format, &r, &g, &b);
+
+            dst_row[x * 3] = r;
+            dst_row[x * 3 + 1] = g;
+            dst_row[x * 3 + 2] = b;
         }
     }
+
+    if (SDL_MUSTLOCK(surface))
+        SDL_UnlockSurface(surface);
 
     return pixbuf;
 }
@@ -83,26 +94,33 @@ static void on_load_image(GtkWidget *button, gpointer user_data)
         char *filename = gtk_file_chooser_get_filename(
             GTK_FILE_CHOOSER(dialog));
 
-        Image *new_image = image_load(filename);
-
-        if (new_image != NULL)
+        SDL_Surface *new_surface = image_load(filename);
+        if (new_surface != NULL)
         {
-            GdkPixbuf *pixbuf = image_to_pixbuf(new_image);
+            printf("Width: %d\n", new_surface->w);
+            printf("Height: %d\n", new_surface->h);
+            printf("Bytes per pixel: %d\n",
+                new_surface->format->BytesPerPixel);
+            printf("Pitch: %d\n", new_surface->pitch);
+        }
+
+        if (new_surface != NULL)
+        {
+            GdkPixbuf *pixbuf = surface_to_pixbuf(new_surface);
 
             if (pixbuf != NULL)
             {
-                image_free(data->image);
-                data->image = new_image;
+                image_free(data->surface);
+                data->surface = new_surface;
 
                 gtk_image_set_from_pixbuf(
-                    GTK_IMAGE(data->image_widget),
-                    pixbuf);
+                    GTK_IMAGE(data->image_widget), pixbuf);
 
                 g_object_unref(pixbuf);
             }
             else
             {
-                image_free(new_image);
+                image_free(new_surface);
                 fprintf(stderr, "Cannot display image\n");
             }
         }
@@ -120,7 +138,7 @@ static void on_window_destroy(GtkWidget *widget,
 
     AppData *data = user_data;
 
-    image_free(data->image);
+    image_free(data->surface);
     g_free(data);
 }
 
