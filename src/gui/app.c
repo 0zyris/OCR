@@ -11,6 +11,7 @@ typedef struct
 {
     GtkWidget *window;
     GtkWidget *image_widget;
+    GtkWidget *angle_spin;
     SDL_Surface *surface;
 } AppData;
 
@@ -171,6 +172,161 @@ static void on_grayscale(GtkWidget *button, gpointer user_data)
 }
 
 
+static void rotate_current_image(AppData *data, int clockwise)
+{
+    if (data->surface == NULL)
+        return;
+
+    SDL_Surface *rotated = rotate_image_90(
+        data->surface, clockwise);
+
+    if (rotated == NULL)
+    {
+        fprintf(stderr, "Image rotation failed: %s\n",
+                SDL_GetError());
+        return;
+    }
+
+    GdkPixbuf *pixbuf = surface_to_pixbuf(rotated);
+
+    if (pixbuf == NULL)
+    {
+        image_free(rotated);
+        return;
+    }
+
+    // L'ancienne surface n'est plus nécessaire.
+    image_free(data->surface);
+    data->surface = rotated;
+
+    // Afficher l'image tournée.
+    gtk_image_set_from_pixbuf(
+        GTK_IMAGE(data->image_widget), pixbuf);
+
+    g_object_unref(pixbuf);
+}
+
+static void on_rotate_left(GtkWidget *button, gpointer user_data)
+{
+    (void)button;
+
+    AppData *data = user_data;
+    rotate_current_image(data, 0);
+}
+
+static void on_rotate_right(GtkWidget *button, gpointer user_data)
+{
+    (void)button;
+
+    AppData *data = user_data;
+    rotate_current_image(data, 1);
+}
+
+
+
+static void on_angle_insert_text(GtkEditable *editable,
+                                 const gchar *text,
+                                 gint length,
+                                 gint *position,
+                                 gpointer user_data)
+{
+    (void)user_data;
+
+    const gchar *current = gtk_entry_get_text(GTK_ENTRY(editable));
+
+    gint start = 0;
+    gint end = 0;
+
+    gboolean has_selection = gtk_editable_get_selection_bounds(
+        editable, &start, &end);
+
+    if (!has_selection)
+        start = end = *position;
+
+    // Construire la valeur résultant de l'insertion.
+    GString *result = g_string_new_len(current, start);
+    g_string_append_len(result, text, length);
+    g_string_append(result, current + end);
+
+    gboolean valid = TRUE;
+    int digit_count = 0;
+
+    for (gsize i = 0; i < result->len; i++)
+    {
+        char ch = result->str[i];
+
+        if (ch >= '0' && ch <= '9')
+        {
+            digit_count++;
+
+            if (digit_count > 3)
+            {
+                valid = FALSE;
+                break;
+            }
+        }
+        else if (ch == '-' && i == 0)
+        {
+            // Un seul signe moins, au début.
+        }
+        else
+        {
+            valid = FALSE;
+            break;
+        }
+    }
+
+    if (!valid)
+        g_signal_stop_emission_by_name(
+            editable, "insert-text");
+
+    g_string_free(result, TRUE);
+}
+
+
+static void on_rotate_custom(GtkWidget *button, gpointer user_data)
+{
+    (void)button;
+
+    AppData *data = user_data;
+
+    if (data->surface == NULL)
+        return;
+
+    // Valider la saisie du GtkSpinButton.
+    gtk_spin_button_update(GTK_SPIN_BUTTON(data->angle_spin));
+
+    int angle = gtk_spin_button_get_value_as_int(
+        GTK_SPIN_BUTTON(data->angle_spin));
+
+    if (angle == 0)
+        return;
+
+    SDL_Surface *rotated = rotate_image(data->surface, angle);
+
+    if (rotated == NULL)
+    {
+        fprintf(stderr, "Rotation failed: %s\n", SDL_GetError());
+        return;
+    }
+
+    GdkPixbuf *pixbuf = surface_to_pixbuf(rotated);
+
+    if (pixbuf == NULL)
+    {
+        image_free(rotated);
+        return;
+    }
+
+    image_free(data->surface);
+    data->surface = rotated;
+
+    gtk_image_set_from_pixbuf(
+        GTK_IMAGE(data->image_widget), pixbuf);
+
+    g_object_unref(pixbuf);
+}
+
 
 static void activate(GtkApplication *app, gpointer user_data)
 {
@@ -222,6 +378,91 @@ static void activate(GtkApplication *app, gpointer user_data)
     g_signal_connect(
         gray_button, "clicked",
         G_CALLBACK(on_grayscale), data);
+
+
+    GtkWidget *rotation_box = gtk_box_new(
+        GTK_ORIENTATION_HORIZONTAL, 10);
+
+    gtk_box_pack_start(
+        GTK_BOX(box), rotation_box, FALSE, FALSE, 0);
+
+    // Bouton rotation gauche.
+    GtkWidget *left_button = gtk_button_new_with_label(
+        "Rotate Left 90°");
+
+    gtk_box_pack_start(
+        GTK_BOX(rotation_box), left_button, TRUE, TRUE, 0);
+
+    g_signal_connect(
+        left_button, "clicked",
+        G_CALLBACK(on_rotate_left), data);
+
+    // Bouton rotation droite.
+    GtkWidget *right_button = gtk_button_new_with_label(
+        "Rotate Right 90°");
+
+    gtk_box_pack_start(
+        GTK_BOX(rotation_box), right_button, TRUE, TRUE, 0);
+
+    g_signal_connect(
+        right_button, "clicked",
+        G_CALLBACK(on_rotate_right), data);
+
+
+    GtkWidget *custom_rotation_box = gtk_box_new(
+        GTK_ORIENTATION_HORIZONTAL, 10);
+
+    gtk_box_pack_start(
+        GTK_BOX(box), custom_rotation_box, FALSE, FALSE, 0);
+
+    // Libellé.
+    GtkWidget *angle_label = gtk_label_new("Angle (°):");
+
+    gtk_box_pack_start(
+        GTK_BOX(custom_rotation_box),
+        angle_label, FALSE, FALSE, 0);
+
+    // Champ numérique avec flèches.
+    data->angle_spin = gtk_spin_button_new_with_range(
+        -999, 999, 1);
+
+    gtk_spin_button_set_digits(
+        GTK_SPIN_BUTTON(data->angle_spin), 0);
+
+    gtk_spin_button_set_numeric(
+        GTK_SPIN_BUTTON(data->angle_spin), TRUE);
+
+    gtk_spin_button_set_value(
+        GTK_SPIN_BUTTON(data->angle_spin), 0);
+
+    gtk_entry_set_width_chars(
+        GTK_ENTRY(data->angle_spin), 5);
+
+    g_signal_connect(
+        data->angle_spin,
+        "insert-text",
+        G_CALLBACK(on_angle_insert_text),
+        NULL);
+
+    gtk_box_pack_start(
+        GTK_BOX(custom_rotation_box),
+        data->angle_spin, FALSE, FALSE, 0);
+
+    // Bouton pour appliquer la rotation.
+    GtkWidget *custom_rotate_button =
+        gtk_button_new_with_label("Rotate");
+
+    gtk_box_pack_start(
+        GTK_BOX(custom_rotation_box),
+        custom_rotate_button, FALSE, FALSE, 0);
+
+    g_signal_connect(
+        custom_rotate_button,
+        "clicked",
+        G_CALLBACK(on_rotate_custom),
+        data);
+
+
 
     g_signal_connect(
         data->window, "destroy",

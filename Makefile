@@ -6,7 +6,7 @@ CFLAGS = -Wall -Wextra -std=c11 -g
 PKGS = gtk+-3.0 sdl2 SDL2_image
 
 CPPFLAGS = $(shell pkg-config --cflags $(PKGS))
-LDLIBS = $(shell pkg-config --libs $(PKGS))
+LDLIBS = $(shell pkg-config --libs $(PKGS)) -lm
 
 TARGET = ocr
 
