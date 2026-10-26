@@ -50,7 +50,8 @@ gboolean image_view_set_surface(AppData *data, SDL_Surface *surface)
     if (data->display_pixbuf != NULL)
         g_object_unref(data->display_pixbuf);
     data->display_pixbuf = new_pixbuf;
-    gtk_stack_set_visible_child_name(GTK_STACK(data->preview_stack), "preview");
+    gtk_stack_set_visible_child_name(
+        GTK_STACK(data->preview_stack), "preview");
     gtk_widget_queue_draw(data->drawing_area);
     return TRUE;
 }

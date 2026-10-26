@@ -3,8 +3,8 @@
 
 #include "app_data.h"
 
-// Met à jour l'aperçu GTK sans changer la résolution de la SDL_Surface.
-// Renvoie FALSE en cas d'échec ; l'ancien aperçu est alors conservé.
+// Update the GTK preview without changing the SDL_Surface resolution.
+// Return FALSE on failure; the previous preview is kept.
 gboolean image_view_set_surface(AppData *data, SDL_Surface *surface);
 gboolean image_view_draw(GtkWidget *widget, cairo_t *cr, gpointer user_data);
 

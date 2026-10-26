@@ -32,7 +32,7 @@ void layout_load_css(void)
 {
     GtkCssProvider *provider = gtk_css_provider_new();
     GError *error = NULL;
-    // Lancer ./ocr depuis la racine du projet.
+    // Run ./ocr from the project root.
     if (!gtk_css_provider_load_from_path(
             provider, "src/gui/style.css", &error))
     {
@@ -116,9 +116,10 @@ void layout_build(GtkApplication *app, AppData *data)
                         data->drawing_area, "preview");
 
     data->status_label = make_label("No image loaded", "muted");
-    gtk_box_pack_start(GTK_BOX(main_area), data->status_label, FALSE, FALSE, 0);
+    gtk_box_pack_start(
+        GTK_BOX(main_area), data->status_label, FALSE, FALSE, 0);
 
-    // Barre latérale d'outils.
+    // Tool sidebar.
     GtkWidget *side = gtk_box_new(GTK_ORIENTATION_VERTICAL, 14);
     gtk_widget_set_size_request(side, 276, -1);
     gtk_widget_set_margin_start(side, 6);
@@ -153,7 +154,8 @@ void layout_build(GtkApplication *app, AppData *data)
     gtk_box_pack_start(GTK_BOX(rotate_card),
                        make_label("ROTATION", "eyebrow"), FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(rotate_card),
-                       make_label("Quick rotation", "field-label"), FALSE, FALSE, 0);
+                       make_label("Quick rotation", "field-label"),
+                       FALSE, FALSE, 0);
 
     GtkWidget *quick_row = gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 8);
     gtk_box_pack_start(GTK_BOX(rotate_card), quick_row, FALSE, FALSE, 0);
@@ -183,7 +185,8 @@ void layout_build(GtkApplication *app, AppData *data)
                                    G_CALLBACK(on_rotate_custom), data);
     gtk_box_pack_start(GTK_BOX(rotate_card), apply, FALSE, FALSE, 0);
     gtk_box_pack_start(GTK_BOX(rotate_card),
-                       make_label("0° restores the loaded image", "small-hint"),
+                       make_label(
+                           "0° restores the loaded image", "small-hint"),
                        FALSE, FALSE, 0);
 
     GtkWidget *tip = make_label(

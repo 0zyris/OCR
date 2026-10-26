@@ -39,7 +39,7 @@ void on_load_image(GtkWidget *button, gpointer user_data)
         }
         else
         {
-            // L'original conservé pour les rotations est déjà en niveaux de gris.
+            // The original kept for rotations is already grayscale.
             grayscale_image(original);
             SDL_Surface *shown = SDL_ConvertSurfaceFormat(
                 original, SDL_PIXELFORMAT_RGB888, 0);
@@ -49,7 +49,8 @@ void on_load_image(GtkWidget *button, gpointer user_data)
                 image_free(data->original_surface);
                 data->original_surface = original;
                 data->surface = shown;
-                gtk_spin_button_set_value(GTK_SPIN_BUTTON(data->angle_spin), 0);
+                gtk_spin_button_set_value(
+                    GTK_SPIN_BUTTON(data->angle_spin), 0);
                 char *status = g_strdup_printf("Image loaded · %d × %d px",
                                                shown->w, shown->h);
                 show_status(data, status);
@@ -117,7 +118,7 @@ void on_rotate_custom(GtkWidget *button, gpointer user_data)
     gtk_spin_button_update(GTK_SPIN_BUTTON(data->angle_spin));
     int angle = gtk_spin_button_get_value_as_int(
         GTK_SPIN_BUTTON(data->angle_spin));
-    // Cette rotation repart toujours de l'original ; 0° sert de reset.
+    // Always rotate from the original; 0 degrees resets the image.
     apply_rotated_surface(data, rotate_image(data->original_surface, angle));
 }
 
@@ -131,7 +132,7 @@ void on_angle_insert_text(GtkEditable *editable, const gchar *text,
     if (!gtk_editable_get_selection_bounds(editable, &start, &end))
         start = end = *position;
 
-    // La saisie autorisée est ASCII : indices caractères == indices octets.
+    // Input is restricted to ASCII, so character indices equal byte indices.
     GString *result = g_string_new_len(current, start);
     g_string_append_len(result, text, length);
     g_string_append(result, current + end);

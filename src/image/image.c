@@ -47,7 +47,7 @@ void grayscale_image(SDL_Surface *surface)
     if (surface == NULL)
         return;
 
-    // Notre application utilise RGB888 : 4 octets par pixel.
+    // The application uses RGB888: 4 bytes per pixel.
     if (surface->format->format != SDL_PIXELFORMAT_RGB888)
         return;
 
@@ -59,7 +59,7 @@ void grayscale_image(SDL_Surface *surface)
 
     for (int y = 0; y < surface->h; y++)
     {
-        // pitch = nombre d'octets entre deux lignes.
+        // Pitch is the number of bytes between rows.
         Uint8 *row = (Uint8 *)surface->pixels
                    + y * surface->pitch;
 
@@ -72,14 +72,14 @@ void grayscale_image(SDL_Surface *surface)
             SDL_GetRGB(pixels[x], surface->format,
                        &r, &g, &b);
 
-            // Calcul de la luminance.
+            // Calculate luminance.
             Uint8 gray = (Uint8)(
                 0.299 * r +
                 0.587 * g +
                 0.114 * b
             );
 
-            // Les trois composantes deviennent identiques.
+            // Set all three components to the same value.
             pixels[x] = SDL_MapRGB(
                 surface->format, gray, gray, gray);
         }
@@ -96,14 +96,14 @@ SDL_Surface *rotate_image_90(const SDL_Surface *surface, int clockwise)
     if (surface == NULL)
         return NULL;
 
-    // Format commun avec les autres modules du projet.
+    // Use the format shared by the other project modules.
     if (surface->format->format != SDL_PIXELFORMAT_RGB888)
         return NULL;
 
     int old_width = surface->w;
     int old_height = surface->h;
 
-    // Après une rotation de 90°, les dimensions s'inversent.
+    // A 90-degree rotation swaps the dimensions.
     SDL_Surface *rotated = SDL_CreateRGBSurfaceWithFormat(
         0,
         old_height,
@@ -145,13 +145,13 @@ SDL_Surface *rotate_image_90(const SDL_Surface *surface, int clockwise)
 
             if (clockwise)
             {
-                // Rotation droite.
+                // Rotate clockwise.
                 new_x = old_height - 1 - y;
                 new_y = x;
             }
             else
             {
-                // Rotation gauche.
+                // Rotate counterclockwise.
                 new_x = y;
                 new_y = old_width - 1 - x;
             }
@@ -184,7 +184,7 @@ SDL_Surface *rotate_image(const SDL_Surface *surface, int angle)
 
     angle %= 360;
 
-    // Rotations exactes, sans perte de qualité.
+    // Exact rotations without quality loss.
     if (angle == 90 || angle == -270)
         return rotate_image_90(surface, 1);
 
@@ -246,7 +246,7 @@ SDL_Surface *rotate_image(const SDL_Surface *surface, int angle)
             double dx = x - dst_cx;
             double dy = y - dst_cy;
 
-            // Angle positif = rotation vers la droite.
+            // A positive angle rotates clockwise.
             double src_x = c * dx + s * dy + src_cx;
             double src_y = -s * dx + c * dy + src_cy;
 
@@ -256,7 +256,7 @@ SDL_Surface *rotate_image(const SDL_Surface *surface, int angle)
             double fx = src_x - x0;
             double fy = src_y - y0;
 
-            // Chaque voisin hors image est considéré blanc.
+            // Treat every neighbor outside the image as white.
             double gray = 0.0;
 
             for (int j = 0; j < 2; j++)
@@ -284,7 +284,7 @@ SDL_Surface *rotate_image(const SDL_Surface *surface, int angle)
                         SDL_GetRGB(src_row[sx], source->format,
                                    &r, &g, &b);
 
-                        // L'image source est déjà en gris.
+                        // The source image is already grayscale.
                         value = r;
                     }
 
