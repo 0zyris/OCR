@@ -1,0 +1,71 @@
+/* GTK3 CSS — sober, light interface */
+window, .app-root {
+    background-color: #f3f5f9;
+    color: #202a3b;
+    font-family: "Sans";
+    font-size: 13px;
+}
+headerbar.app-header {
+    background-image: none;
+    background-color: #ffffff;
+    border-bottom: 1px solid #e4e9f1;
+    box-shadow: none;
+    min-height: 44px;
+}
+headerbar.app-header label.title { color: #18263c; font-weight: 700; }
+headerbar.app-header label.subtitle { color: #758198; }
+.section-title { font-size: 17px; font-weight: 700; color: #202c40; }
+.preview-card {
+    background-color: #ffffff;
+    border: 1px solid #e0e6ef;
+    border-radius: 16px;
+    box-shadow: 0 3px 12px rgba(20, 40, 70, 0.05);
+}
+.tool-card {
+    background-color: #ffffff;
+    border: 1px solid #e0e6ef;
+    border-radius: 13px;
+    padding: 18px;
+}
+.eyebrow {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: #697992;
+}
+.field-label { font-weight: 600; color: #35425a; }
+.empty-title { font-size: 18px; font-weight: 700; color: #48576e; }
+.muted, .small-hint { color: #8390a4; }
+.small-hint { font-size: 11px; }
+.sidebar-tip { color: #7a879b; font-size: 12px; }
+button {
+    min-height: 26px;
+    border-radius: 9px;
+    padding: 7px 11px;
+    box-shadow: none;
+    font-weight: 600;
+    background-image: none;
+}
+button.primary-button {
+    background-color: #3564dc;
+    border: 1px solid #3564dc;
+    color: #ffffff;
+}
+button.primary-button:hover { background-color: #2855ca; }
+button.secondary-button {
+    background-color: #f7f9fc;
+    border: 1px solid #dce3ed;
+    color: #344765;
+}
+button.secondary-button:hover { background-color: #eaf0ff; }
+spinbutton.angle-input {
+    border: 1px solid #dce3ed;
+    border-radius: 8px;
+    background-color: #ffffff;
+    min-height: 36px;
+}
+spinbutton.angle-input entry {
+    border: none;
+    box-shadow: none;
+    background: transparent;
+}

@@ -175,21 +175,25 @@ SDL_Surface *rotate_image_90(const SDL_Surface *surface, int clockwise)
 }
 
 
+
 SDL_Surface *rotate_image(const SDL_Surface *surface, int angle)
 {
-    if (surface == NULL)
+    if (surface == NULL ||
+        surface->format->format != SDL_PIXELFORMAT_RGB888)
         return NULL;
 
-    if (surface->format->format != SDL_PIXELFORMAT_RGB888)
-        return NULL;
-
-    // Réduire l'angle à une rotation équivalente.
     angle %= 360;
-    if (angle == 90)
+
+    // Rotations exactes, sans perte de qualité.
+    if (angle == 90 || angle == -270)
         return rotate_image_90(surface, 1);
 
     if (angle == -90 || angle == 270)
         return rotate_image_90(surface, 0);
+
+    if (angle == 0)
+        return SDL_ConvertSurfaceFormat(
+            (SDL_Surface *)surface, SDL_PIXELFORMAT_RGB888, 0);
 
     double radians = angle * 3.14159265358979323846 / 180.0;
     double c = cos(radians);
@@ -198,15 +202,11 @@ SDL_Surface *rotate_image(const SDL_Surface *surface, int angle)
     int width = surface->w;
     int height = surface->h;
 
-    // Dimensions nécessaires pour contenir l'image tournée.
-    int new_width = (int)ceil(fabs(width * c) + fabs(height * s));
-    int new_height = (int)ceil(fabs(width * s) + fabs(height * c));
+    int new_width = (int)ceil(
+        fabs(width * c) + fabs(height * s));
 
-    if (new_width < 1)
-        new_width = 1;
-
-    if (new_height < 1)
-        new_height = 1;
+    int new_height = (int)ceil(
+        fabs(width * s) + fabs(height * c));
 
     SDL_Surface *rotated = SDL_CreateRGBSurfaceWithFormat(
         0, new_width, new_height, 32, SDL_PIXELFORMAT_RGB888);
@@ -236,8 +236,6 @@ SDL_Surface *rotate_image(const SDL_Surface *surface, int angle)
     double dst_cx = (new_width - 1) / 2.0;
     double dst_cy = (new_height - 1) / 2.0;
 
-    Uint32 white = SDL_MapRGB(rotated->format, 255, 255, 255);
-
     for (int y = 0; y < new_height; y++)
     {
         Uint32 *dst_row = (Uint32 *)(
@@ -248,26 +246,56 @@ SDL_Surface *rotate_image(const SDL_Surface *surface, int angle)
             double dx = x - dst_cx;
             double dy = y - dst_cy;
 
-            // Rotation inverse : destination -> source.
+            // Angle positif = rotation vers la droite.
             double src_x = c * dx + s * dy + src_cx;
             double src_y = -s * dx + c * dy + src_cy;
 
-            int ix = (int)round(src_x);
-            int iy = (int)round(src_y);
+            int x0 = (int)floor(src_x);
+            int y0 = (int)floor(src_y);
 
-            if (ix >= 0 && ix < width && iy >= 0 && iy < height)
-            {
-                const Uint32 *src_row = (const Uint32 *)(
-                    (const Uint8 *)source->pixels
-                    + iy * source->pitch);
+            double fx = src_x - x0;
+            double fy = src_y - y0;
 
-                dst_row[x] = src_row[ix];
-            }
-            else
+            // Chaque voisin hors image est considéré blanc.
+            double gray = 0.0;
+
+            for (int j = 0; j < 2; j++)
             {
-                // Fond blanc pour les zones sans image.
-                dst_row[x] = white;
+                for (int i = 0; i < 2; i++)
+                {
+                    int sx = x0 + i;
+                    int sy = y0 + j;
+
+                    double wx = i ? fx : 1.0 - fx;
+                    double wy = j ? fy : 1.0 - fy;
+                    double weight = wx * wy;
+
+                    Uint8 value = 255;
+
+                    if (sx >= 0 && sx < width &&
+                        sy >= 0 && sy < height)
+                    {
+                        const Uint32 *src_row =
+                            (const Uint32 *)(
+                                (const Uint8 *)source->pixels
+                                + sy * source->pitch);
+
+                        Uint8 r, g, b;
+                        SDL_GetRGB(src_row[sx], source->format,
+                                   &r, &g, &b);
+
+                        // L'image source est déjà en gris.
+                        value = r;
+                    }
+
+                    gray += weight * value;
+                }
             }
+
+            Uint8 result = (Uint8)(gray + 0.5);
+
+            dst_row[x] = SDL_MapRGB(
+                rotated->format, result, result, result);
         }
     }
 
