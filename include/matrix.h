@@ -25,6 +25,6 @@ Matrix *mult_by_ele_matrix(Matrix *m1, Matrix *m2);
 
 Matrix *fct_matrix(Matrix *m1, double (*fct)(double));
 Matrix *transpose_matrix(Matrix *m);
+Matrix *sum_rows(Matrix *m);
 
 #endif
-

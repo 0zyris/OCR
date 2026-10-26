@@ -51,7 +51,9 @@ Matrix *add_matrix(Matrix *m1, Matrix *m2){
 
     for (int i = 0; i< m1->rows;i++){
         for (int j=0; j< m1->cols;j++){
-            result->data[i*max_cols + j] = m1->data[i*max_cols + j] + m2->data[i*max_cols +j];
+            double d1 = m1->data[i*max_cols +j];
+            double d2 = m2->data[i*max_cols +j];
+            result->data[i*max_cols + j] = d1 + d2;
         }
     }
     return result;
@@ -70,7 +72,9 @@ Matrix *sub_matrix(Matrix *m1, Matrix *m2){
 
     for (int i = 0; i< m1->rows;i++){
         for (int j=0; j< m1->cols;j++){
-            result->data[i*max_cols + j] = m1->data[i*max_cols + j] - m2->data[i*max_cols +j];
+            double d1 = m1->data[i*max_cols + j];
+            double d2 = m2->data[i*max_cols + j];
+            result->data[i*max_cols + j] = d1 - d2;
         }
     }
 
@@ -90,7 +94,7 @@ Matrix *mult_matrix(Matrix *m1, Matrix *m2){
         for (int j=0; j< result->cols;j++){
             double sum = 0;
             for (int k = 0; k < m1->cols;k++){
-                sum = sum + m1->data[i*m1->cols + k] * m2->data[k*m2->cols + j];
+                sum =sum + m1->data[i*m1->cols + k]* m2->data[k*m2->cols + j];
             }
             result->data[i*max_cols + j] = sum;
         }
@@ -121,7 +125,9 @@ Matrix *mult_by_ele_matrix(Matrix *m1, Matrix *m2){
  
     for (int i = 0; i< m1->rows;i++){
         for (int j=0; j< m1->cols;j++){
-            result->data[i*max_cols + j] = m1->data[i*max_cols + j] * m2->data[i*max_cols +j];
+            double d1 = m1->data[i*max_cols +j];
+            double d2 = m2->data[i*max_cols +j];
+            result->data[i*max_cols + j] = d1 * d2;
         }
     }
     return result;
@@ -153,3 +159,12 @@ Matrix *transpose_matrix(Matrix *m){
     return result;
 }
 
+Matrix *sum_rows(Matrix *m){
+    //calcule la somme des lignes d'une matrice ex : 3x6 -> 1x6
+
+    Matrix *result = create_matrix(1, m->cols);
+    for (int j = 0; j < m->cols; j++)
+        for (int i = 0; i < m->rows; i++)
+            result->data[j] += m->data[i*m->cols + j];
+    return result;
+}
