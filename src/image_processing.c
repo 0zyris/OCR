@@ -198,7 +198,7 @@ void find_layout_and_blocks(int *vert_hist, int width, int *horiz_hist,
     *b1_xmin = 0; *b1_xmax = width - 1; *b1_ymin = 0; *b1_ymax = height - 1;
     *b2_xmin = 0; *b2_xmax = width - 1; *b2_ymin = 0; *b2_ymax = height - 1;
 
-    The largest hole dictates whether one cuts vertically or horizontally
+    // The largest hole dictates whether one cuts vertically or horizontally
     if (max_x_width > max_y_width) {
         // LEFT / RIGHT Layout
         *b1_xmax = max_x_start - 1;
