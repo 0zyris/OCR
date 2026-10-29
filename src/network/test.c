@@ -3,7 +3,7 @@
 int main(void){
     srand(0);
 
-    // --- Dataset XNOR ---
+    //Dataset
     Matrix *X = create_matrix(4, 2);
     double xs[8] = {0,0,  0,1,  1,0,  1,1};
     for (int i = 0; i < 8; i++){
@@ -16,12 +16,12 @@ int main(void){
         y->data[i] = ys[i];
     }
 
-    // --- Réseau et hyperparamètres ---
+    //Réseau
     Network *net = network_init(2, 4, 1);
     double lr = 1.0;
     int repeats = 10000;
 
-    // --- Apprentissage ---
+    //Apprentissage
     for (int repeat = 0; repeat < repeats; repeat++){
         ForwardCache *cache = forward(net, X);
 
@@ -36,7 +36,7 @@ int main(void){
         free_gradients(grads);
     }
 
-    // --- Vérification finale ---
+    //Fin on passe les données
     ForwardCache *final = forward(net, X);
     printf("Résultats :\n");
     for (int i = 0; i < 4; i++){

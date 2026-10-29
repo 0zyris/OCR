@@ -52,8 +52,6 @@ Grid *get_grid(char* filename){
         max_cols = strlen(line)-1;
     }
 
-    printf("%d,%d\n",max_cols,max_rows);
-
     Grid *grid = init_grid(max_rows,max_cols);
     if (grid == NULL){
         free(line);
@@ -79,6 +77,7 @@ Grid *get_grid(char* filename){
 }
 int find_word(const Grid *g, const char *word,
               int *x1, int *y1, int *x2, int *y2){
+    //Cherche un mot word dans la grille g
     int len = strlen(word);
     if (len == 0) return 0;
     int rows = g->rows;
@@ -124,13 +123,13 @@ int find_word(const Grid *g, const char *word,
 
 int main(int argc, char *argv[]){
     if (argc != 3){
-        fprintf(stderr, "Usage: %s <fichier_grille> <mot>\n", argv[0]);
+        fprintf(stderr, "Usage: %s <file> <word>\n", argv[0]);
         return 1;
     }
 
     Grid *g = get_grid(argv[1]);
     if (g == NULL){
-        fprintf(stderr,"Erreur : impossible de lire la grille '%s'\n",argv[1]);
+        fprintf(stderr,"Error : imposible to read the grid '%s'\n",argv[1]);
         return 1;
     }
 

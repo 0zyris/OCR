@@ -6,6 +6,8 @@ double random_weight(){
 }
 
 Network *network_init(int input_size, int hidden_size, int output_size){
+    //initialise le réseau de neuronnes avec les poids de chaque couche
+    //+ le biai
     Network *network = malloc(sizeof(Network));
 
     network->W1 = create_matrix(input_size, hidden_size);
@@ -13,7 +15,6 @@ Network *network_init(int input_size, int hidden_size, int output_size){
     network->W2 = create_matrix(hidden_size, output_size);
     network->b2 = create_matrix(1, output_size);
 
-    //On définit des poids aléatoires
     for (int i = 0; i < network->W1->rows * network->W1->cols; i++)
         network->W1->data[i] = random_weight();
     for (int i = 0; i < network->W2->rows * network->W2->cols; i++)
@@ -23,6 +24,7 @@ Network *network_init(int input_size, int hidden_size, int output_size){
 }
 
 ForwardCache *forward(Network *network, Matrix *X){
+    //Fait passer une matrice X de donnée dans le réseau de neuronne network
     ForwardCache *cache = malloc(sizeof(ForwardCache));
     cache->z1 = linear_forward(X, network->W1, network->b1);
     cache->a1 = sigmoid(cache->z1);
@@ -33,6 +35,7 @@ ForwardCache *forward(Network *network, Matrix *X){
 
 
 Matrix *linear_forward(Matrix *X, Matrix *W, Matrix *b){
+    //Fait passer une matrice X dans une couche de poids W et biais b
     Matrix *z= mult_matrix(X,W);
     if (z== NULL)
     {
@@ -47,6 +50,7 @@ Matrix *linear_forward(Matrix *X, Matrix *W, Matrix *b){
 }
 
 Matrix *sigmoid(Matrix *Z){
+    //Applique la fonction sigmoid sur la matrice Z
     Matrix *A = create_matrix(Z->rows,Z->cols);
     for (int i = 0; i < Z->rows; i++){
         for (int j=0; j< Z->cols; j++){
@@ -57,6 +61,8 @@ Matrix *sigmoid(Matrix *Z){
 }
 
 double cost(Matrix *A, Matrix *y){
+    //Calcule la marge d'erreur entre le résultat obtenu A et
+    //le résultat attendu y
     double sum = 0;
     Matrix *log_A = fct_matrix(A,log);
     Matrix *YMultlog_A = mult_by_ele_matrix(log_A,y);
@@ -89,13 +95,17 @@ double cost(Matrix *A, Matrix *y){
 }
 
 Matrix *sigmoid_derivative(Matrix *A){
+    //Applique la dérivé de la fonction sigmoide sur A
     Matrix *result = create_matrix(A->rows, A->cols);
     for (int i = 0; i < A->rows * A->cols; i++)
         result->data[i] = A->data[i] * (1.0 - A->data[i]);
     return result;
 }
 
-Gradients *backward(Network *network, ForwardCache *cache, Matrix *X, Matrix *y){
+Gradients *backward(Network *network, ForwardCache *cache,
+    Matrix *X, Matrix *y){
+    //Inverse de forward permet de récupérer les données initiales
+    //depuis une donnée dans le réseau network
     Gradients *grads = malloc(sizeof(Gradients));
     double inv_m = 1.0 / X->rows;
 
@@ -135,6 +145,8 @@ Gradients *backward(Network *network, ForwardCache *cache, Matrix *X, Matrix *y)
 }
 
 void apply_update(Matrix **param, Matrix *grad, double lr){
+    //Mets à jour les poids grad des neurones param 
+    //d'apres un facteur lr (learning rate)
     Matrix *scaled  = scalar_mult_matrix(grad, lr);
     Matrix *updated = sub_matrix(*param, scaled);
     free_matrix(scaled);
@@ -143,6 +155,7 @@ void apply_update(Matrix **param, Matrix *grad, double lr){
 }
 
 void update_weights(Network *network, Gradients *grads, double lr){
+    //Mets à jours tous le réseau de neurones
     apply_update(&network->W1, grads->dW1, lr);
     apply_update(&network->b1, grads->db1, lr);
     apply_update(&network->W2, grads->dW2, lr);
@@ -150,6 +163,7 @@ void update_weights(Network *network, Gradients *grads, double lr){
 }
 
 void free_cache(ForwardCache *c){
+    //Détruit la struct ForwardCache
     free_matrix(c->z1);
     free_matrix(c->a1);
     free_matrix(c->z2);
@@ -158,6 +172,7 @@ void free_cache(ForwardCache *c){
 }
 
 void free_gradients(Gradients *g){
+    //Détruit la struct Gradient
     free_matrix(g->dW1);
     free_matrix(g->db1);
     free_matrix(g->dW2);
@@ -166,6 +181,7 @@ void free_gradients(Gradients *g){
 }
 
 void free_network(Network *n){
+    //Détruit la struct Network
     free_matrix(n->W1);
     free_matrix(n->b1);
     free_matrix(n->W2);
