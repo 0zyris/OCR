@@ -3,20 +3,21 @@
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
 #include "../include/image_processing.h"
+#include "../include/cutting_letters.h"
+#include "../include/tools.h"
 
-
-// Fonction pour charger une image dans une SDL_Surface
+// Function to load an image in a SDL_Surface
 SDL_Surface* load_image(const char* path) {
     SDL_Surface* surface = IMG_Load(path);
     if (surface == NULL) {
-        errx(EXIT_FAILURE, "Erreur lors du chargement de l'image : %s",
+        errx(EXIT_FAILURE, "Error loading image : %s",
             IMG_GetError());
     }
     
     SDL_Surface* optimized_surface = SDL_ConvertSurfaceFormat(surface,
         SDL_PIXELFORMAT_RGB888, 0);
     if (optimized_surface == NULL) {
-        errx(EXIT_FAILURE, "Erreur lors de la conversion de la surface : %s",
+        errx(EXIT_FAILURE, "Error when converting the surface : %s",
             SDL_GetError());
     }
     
@@ -26,38 +27,38 @@ SDL_Surface* load_image(const char* path) {
 
 int main(int argc, char **argv) {
     if (argc != 3) {
-        errx(EXIT_FAILURE, "Usage: %s <fichier_image> <mot_ou_option>",
+        errx(EXIT_FAILURE, "Use: %s <file_image> <word_or_option>",
             argv[0]);
     }
 
     if (SDL_Init(SDL_INIT_VIDEO) != 0) errx(EXIT_FAILURE,
-        "Erreur d'initialisation de la SDL : %s", SDL_GetError());
+        "SDL Initialization Error : %s", SDL_GetError());
     
     int img_flags = IMG_INIT_PNG | IMG_INIT_JPG;
     if ((IMG_Init(img_flags) & img_flags) != img_flags) {
-        errx(EXIT_FAILURE, "Erreur d'initialisation de SDL_image : %s",
+        errx(EXIT_FAILURE, "SDL_image initialization error : %s",
             IMG_GetError());
     }
 
     SDL_Surface* image = load_image(argv[1]);
-    printf("Image '%s' chargée avec succès.\n", argv[1]);
+    printf("Image '%s' uploaded successfully.\n", argv[1]);
     printf("Dimensions : %d x %d pixels\n", image->w, image->h);
 
     binarize_image(image);
-    printf("Binarisation terminée.\n");
+    printf("Binarization complete.\n");
 
-    // 1. Allocation et calcul des deux histogrammes
+    // 1. Allocation and calculation of the two histograms
     int *horiz_hist = malloc(image->h * sizeof(int));
     if (horiz_hist == NULL) errx(EXIT_FAILURE,
-        "Erreur d'allocation mémoire pour l'histogramme horizontal");
+        "Memory allocation error for the horizontal histogram");
     compute_horizontal_histogram(image, horiz_hist);
 
     int *vert_hist = malloc(image->w * sizeof(int));
     if (vert_hist == NULL) errx(EXIT_FAILURE,
-        "Erreur d'allocation mémoire pour l'histogramme vertical");
+        "Memory allocation error for the vertical histogram");
     compute_vertical_histogram(image, vert_hist);
 
-    // 2. Détermination de la disposition globale et coupe initiale
+    // 2. Determination of the overall layout and initial cut
     int b1_xmin, b1_xmax, b1_ymin, b1_ymax;
     int b2_xmin, b2_xmax, b2_ymin, b2_ymax;
 
@@ -65,44 +66,54 @@ int main(int argc, char **argv) {
                            &b1_xmin, &b1_xmax, &b1_ymin, &b1_ymax,
                            &b2_xmin, &b2_xmax, &b2_ymin, &b2_ymax);
 
-    // 3. Ajustement des cadres autour du texte de chaque bloc
+    // 3. Adjusting the frames around each block’s text
     crop_box(image, &b1_xmin, &b1_xmax, &b1_ymin, &b1_ymax);
     crop_box(image, &b2_xmin, &b2_xmax, &b2_ymin, &b2_ymax);
 
-    // 4. Identification par superficie (Largeur * Hauteur)
+    // 4. Identification by area (Width * Height)
     long area1 = (long)(b1_xmax - b1_xmin) * (b1_ymax - b1_ymin);
     long area2 = (long)(b2_xmax - b2_xmin) * (b2_ymax - b2_ymin);
 
-    printf("\n--- Identification des blocs ---\n");
+    printf("\n--- Blocks identification ---\n");
     if (area1 > area2) {
-        printf("-> Le BLOC 1 est la GRILLE (Bleu)\n");
-        printf("-> Le BLOC 2 est la LISTE DE MOTS (Rouge/Vert)\n");
-        segment_grid_letters_with_histogram(image, b1_xmin, b1_xmax, b1_ymin, b1_ymax, vert_hist, horiz_hist);
+        printf("-> BLOCK 1 is the GRID (Blue/Yellow)\n");
+        printf("-> BLOCK 2 is the WORD LIST (Red/Green/Purple)\n");
+        struct head_surface *grid_letters = 
+            segment_grid_letters_with_histogram(image, b1_xmin, b1_xmax, 
+                b1_ymin, b1_ymax, vert_hist, horiz_hist);
         draw_rectangle(image, b1_xmin, b1_xmax, b1_ymin, b1_ymax,
             0, 0, 255);
         draw_rectangle(image, b2_xmin, b2_xmax, b2_ymin, b2_ymax,
             255, 0, 0);
-        segment_word_list(image, b2_xmin, b2_xmax, b2_ymin, b2_ymax, 0);
+        struct head_surface *word_letters = segment_word_list(image, 
+            b2_xmin, b2_xmax, b2_ymin, b2_ymax, 0);
+        save_surface(grid_letters, 1);
+        save_surface(word_letters, 0);
     } else {
-        printf("-> Le BLOC 2 est la GRILLE (Bleu)\n");
-        printf("-> Le BLOC 1 est la LISTE DE MOTS (Rouge/Vert)\n");
-        segment_grid_letters_with_histogram(image, b2_xmin, b2_xmax, b2_ymin, b2_ymax, vert_hist, horiz_hist);
+        printf("-> BLOCK 2 is the GRID (Blue/Yellow)\n");
+        printf("-> BLOCK 1 is the WORD LIST (Red/Green/Purple)\n");
+        struct head_surface *grid_letters = 
+            segment_grid_letters_with_histogram(image, b2_xmin, b2_xmax, 
+                b2_ymin, b2_ymax, vert_hist, horiz_hist);
         draw_rectangle(image, b1_xmin, b1_xmax, b1_ymin, b1_ymax,
             255, 0, 0);
         draw_rectangle(image, b2_xmin, b2_xmax, b2_ymin, b2_ymax,
             0, 0, 255);
-        segment_word_list(image, b1_xmin, b1_xmax, b1_ymin, b1_ymax, 0);
+        struct head_surface *word_letters = segment_word_list(image, b1_xmin,
+            b1_xmax, b1_ymin, b1_ymax, 0);
+        save_surface(grid_letters, 1);
+        save_surface(word_letters, 0);
     }
 
-    // 5. Libération des histogrammes
+    // 5. Release of histograms
     free(horiz_hist);
     free(vert_hist);
 
-    // Sauvegarde du résultat
+    // Saving the result
     if (IMG_SavePNG(image, "output_binarized.png") != 0) {
-        printf("Erreur de sauvegarde : %s\n", IMG_GetError());
+        printf("Save error : %s\n", IMG_GetError());
     } else {
-        printf("Résultat sauvegardé sous 'output_binarized.png'.\n");
+        printf("Result saved under 'output_binarized.png'.\n");
     }
 
     SDL_FreeSurface(image);
