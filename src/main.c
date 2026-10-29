@@ -6,18 +6,18 @@
 #include "../include/cutting_letters.h"
 #include "../include/tools.h"
 
-// Function to load an image in a SDL_Surface
+// Function to load an image into an SDL_Surface
 SDL_Surface* load_image(const char* path) {
     SDL_Surface* surface = IMG_Load(path);
     if (surface == NULL) {
-        errx(EXIT_FAILURE, "Error loading image : %s",
+        errx(EXIT_FAILURE, "Error loading the image : %s",
             IMG_GetError());
     }
     
     SDL_Surface* optimized_surface = SDL_ConvertSurfaceFormat(surface,
         SDL_PIXELFORMAT_RGB888, 0);
     if (optimized_surface == NULL) {
-        errx(EXIT_FAILURE, "Error when converting the surface : %s",
+        errx(EXIT_FAILURE, "Error during surface conversion : %s",
             SDL_GetError());
     }
     
@@ -32,7 +32,7 @@ int main(int argc, char **argv) {
     }
 
     if (SDL_Init(SDL_INIT_VIDEO) != 0) errx(EXIT_FAILURE,
-        "SDL Initialization Error : %s", SDL_GetError());
+        "SDL initialization error : %s", SDL_GetError());
     
     int img_flags = IMG_INIT_PNG | IMG_INIT_JPG;
     if ((IMG_Init(img_flags) & img_flags) != img_flags) {
@@ -41,11 +41,11 @@ int main(int argc, char **argv) {
     }
 
     SDL_Surface* image = load_image(argv[1]);
-    printf("Image '%s' uploaded successfully.\n", argv[1]);
+    printf("Image '%s' successfully uploaded.\n", argv[1]);
     printf("Dimensions : %d x %d pixels\n", image->w, image->h);
 
     binarize_image(image);
-    printf("Binarization complete.\n");
+    printf("Binarization completed.\n");
 
     // 1. Allocation and calculation of the two histograms
     int *horiz_hist = malloc(image->h * sizeof(int));
@@ -66,7 +66,7 @@ int main(int argc, char **argv) {
                            &b1_xmin, &b1_xmax, &b1_ymin, &b1_ymax,
                            &b2_xmin, &b2_xmax, &b2_ymin, &b2_ymax);
 
-    // 3. Adjusting the frames around each block’s text
+    // 3. Adjustment of the frames around the text of each block
     crop_box(image, &b1_xmin, &b1_xmax, &b1_ymin, &b1_ymax);
     crop_box(image, &b2_xmin, &b2_xmax, &b2_ymin, &b2_ymax);
 
@@ -74,7 +74,7 @@ int main(int argc, char **argv) {
     long area1 = (long)(b1_xmax - b1_xmin) * (b1_ymax - b1_ymin);
     long area2 = (long)(b2_xmax - b2_xmin) * (b2_ymax - b2_ymin);
 
-    printf("\n--- Blocks identification ---\n");
+    printf("\n--- Identification of blocks ---\n");
     if (area1 > area2) {
         printf("-> BLOCK 1 is the GRID (Blue/Yellow)\n");
         printf("-> BLOCK 2 is the WORD LIST (Red/Green/Purple)\n");
@@ -111,9 +111,9 @@ int main(int argc, char **argv) {
 
     // Saving the result
     if (IMG_SavePNG(image, "output_binarized.png") != 0) {
-        printf("Save error : %s\n", IMG_GetError());
+        printf("Saving error : %s\n", IMG_GetError());
     } else {
-        printf("Result saved under 'output_binarized.png'.\n");
+        printf("Result saved as 'output_binarized.png'.\n");
     }
 
     SDL_FreeSurface(image);

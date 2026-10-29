@@ -30,7 +30,7 @@ void crop_box(SDL_Surface *surface, int *xmin, int *xmax, int *ymin,
         }
     }
     
-    // UPDATE of the coordinators
+    // Update of coordinates
     if (found) {
         *xmin = new_xmin; *xmax = new_xmax;
         *ymin = new_ymin; *ymax = new_ymax;
@@ -134,7 +134,7 @@ struct letters_surface *segment_letters(SDL_Surface *surface, int xmin,
     return head_letters;
 }
 
-// Isolate each word in the list and frame it as closely as possible in green
+// Isolate each word from the list and frame it in green as closely as possible
 struct head_surface *segment_word_list(SDL_Surface *surface, int xmin, 
         int xmax, int ymin, int ymax, int grid) {
     int in_word = 0;
@@ -167,7 +167,7 @@ struct head_surface *segment_word_list(SDL_Surface *surface, int xmin,
                 int w_xmin = xmin, w_xmax = xmax;
                 int w_ymin = word_ymin, w_ymax = y - 1;
                 
-                // Tighten the green frame around the specific word
+                // Tighten the green frame around the precise word
                 crop_box(surface, &w_xmin, &w_xmax, &w_ymin, &w_ymax);
                 w_xmin--, w_ymin--; 
                 w_xmax++, w_ymax++; // Adding a margin of 1 pixel

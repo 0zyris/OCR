@@ -1,7 +1,7 @@
 #include <SDL2/SDL.h>
 #include "../include/image_processing.h"
 
-// Calculates the Otsu threshold
+// Calculate Otsu's threshold
 int calculate_otsu_threshold(SDL_Surface *surface) {
     Uint32 *pixels = (Uint32 *)surface->pixels;
     int pixel_count = surface->w * surface->h;
@@ -9,14 +9,14 @@ int calculate_otsu_threshold(SDL_Surface *surface) {
     Uint8 r, g, b;
     int histogram[256] = {0};
 
-    // 1. Create the grayscale histogram
+    // 1. Create the histogram of gray levels
     for (int i = 0; i < pixel_count; i++) {
         SDL_GetRGB(pixels[i], format, &r, &g, &b);
         Uint8 luminance = 0.3 * r + 0.59 * g + 0.11 * b;
         histogram[luminance]++;
     }
 
-    // 2. Otsu’s method
+    // 2. Otsu's Method
     int total = pixel_count;
     float sum = 0;
     for (int i = 0; i < 256; i++) sum += i * histogram[i];
@@ -60,7 +60,7 @@ void binarize_image(SDL_Surface *surface) {
         SDL_GetRGB(pixels[i], format, &r, &g, &b);
         Uint8 luminance = 0.3 * r + 0.59 * g + 0.11 * b;
         
-        // If darker than the dynamic threshold, we put black
+        // If darker than the dynamic threshold, set to black
         if (luminance < threshold) {
             pixels[i] = SDL_MapRGB(format, 0, 0, 0);
         } else {
@@ -80,12 +80,12 @@ void compute_horizontal_histogram(SDL_Surface *surface, int *histogram) {
     SDL_PixelFormat *format = surface->format;
     Uint8 r, g, b;
 
-    // Initializing the histogram to 0
+    // Initialization of the histogram to 0
     for (int y = 0; y < surface->h; y++) {
         histogram[y] = 0;
     }
 
-    // Path line by line
+    // Line-by-line traversal
     for (int y = 0; y < surface->h; y++) {
         for (int x = 0; x < surface->w; x++) {
             // The 1D index corresponding to the 2D coordinates (x, y)
@@ -93,7 +93,7 @@ void compute_horizontal_histogram(SDL_Surface *surface, int *histogram) {
             SDL_GetRGB(pixels[index], format, &r, &g, &b);
             
             // Since the image is binarized
-            // -> we just check if the pixel is black
+            // -> we're just checking if the pixel is black
             if (r == 0) {
                 histogram[y]++;
             }
@@ -130,7 +130,7 @@ void compute_vertical_histogram(SDL_Surface *surface, int *histogram) {
     if (SDL_MUSTLOCK(surface)) SDL_UnlockSurface(surface);
 }
 
-// Drawing function with configurable color
+// Drawing function with customizable color
 void draw_rectangle(SDL_Surface *surface, int x_min, int x_max, int y_min,
                         int y_max, Uint8 r_val, Uint8 g_val, Uint8 b_val) {
     if (SDL_MUSTLOCK(surface)) SDL_LockSurface(surface);
@@ -160,7 +160,7 @@ void draw_rectangle(SDL_Surface *surface, int x_min, int x_max, int y_min,
     if (SDL_MUSTLOCK(surface)) SDL_UnlockSurface(surface);
 }
 
-// Determines the layout and cuts the image into two large blocks
+// Determine the layout and cut the image into two large blocks
 void find_layout_and_blocks(int *vert_hist, int width, int *horiz_hist,
                             int height, int *b1_xmin, int *b1_xmax,
                             int *b1_ymin, int *b1_ymax, int *b2_xmin,
@@ -182,7 +182,7 @@ void find_layout_and_blocks(int *vert_hist, int width, int *horiz_hist,
         }
     }
 
-    // 2. Find the largest hole on the Y-axis (lines)
+    // 2. Find the largest gap on the Y-axis (rows)
     int max_y_start = 0, max_y_width = 0, cur_y_start = 0, cur_y_len = 0;
     for (int y = 0; y < height; y++) {
         if (horiz_hist[y] <= threshold) {
@@ -194,17 +194,17 @@ void find_layout_and_blocks(int *vert_hist, int width, int *horiz_hist,
         }
     }
 
-    // We operate on the principle that each block takes up the entire image.
+    // It is assumed that each block takes up the entire image
     *b1_xmin = 0; *b1_xmax = width - 1; *b1_ymin = 0; *b1_ymax = height - 1;
     *b2_xmin = 0; *b2_xmax = width - 1; *b2_ymin = 0; *b2_ymax = height - 1;
 
-    // 3. The largest hole dictates whether you cut vertically or horizontally.
+    // The largest hole dictates whether one cuts vertically or horizontally
     if (max_x_width > max_y_width) {
-        // LEFT / RIGHT layout
+        // LEFT / RIGHT Layout
         *b1_xmax = max_x_start - 1;
         *b2_xmin = max_x_start + max_x_width;
     } else {
-        // UP / DOWN Layout
+        // UPPER / LOWER Layout
         *b1_ymax = max_y_start - 1;
         *b2_ymin = max_y_start + max_y_width;
     }
