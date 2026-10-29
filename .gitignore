@@ -1,4 +1,23 @@
 solver
-*.o
 *.png
 !sample_images/*.png
+
+# Compiled files
+obj/
+*.o
+*.a
+*.so
+
+# Executable
+/ocr
+
+# VS Code local settings
+.vscode/
+
+# Temporary backup
+vscode-backup
+
+# Debug files
+*.out
+*.core
+core
