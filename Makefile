@@ -17,7 +17,7 @@ ${EXEC}: ${OBJ}
 	${CC} ${CFLAGS} -c $< -o$@
 
 clean:
-	rm -f ${OBJ} ${EXEC}
+	rm -f ${OBJ} ${EXEC} image_storage/*.png
 
 
 .PHONY: all clean
