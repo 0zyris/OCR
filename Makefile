@@ -11,7 +11,7 @@ LEARN_SRC = src/network/learn.c src/network/test.c lib/matrix.c
 SOLVER_OBJ = src/solve/solver.o
 LEARN_OBJ = src/network/learn.o src/network/test.o lib/matrix.o
 
-OCR_SRC = src/main.c \
+OCR_SRC = src/main_ocr.c \
           src/gui/app.c \
           src/gui/layout.c \
           src/gui/callbacks.c \
