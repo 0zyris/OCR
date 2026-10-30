@@ -54,7 +54,6 @@ cutting: $(CUTTING_OBJ)
 app: $(APP_OBJ)
 	$(CC) -o $@ $^ $(APP_LDLIBS)
 
-# Compilation spécifique à app (GTK)
 
 obj/app/%.o: src/app/%.c
 	mkdir -p $(dir $@)
@@ -69,6 +68,8 @@ obj/%.o: src/%.c
 clean:
 	rm -f solver learn cutting app
 	rm -rf obj
-	rm -f image/cutting_storage/*.png
+	rm -f image/image_storage/*.png
+	rm -f image/image_storage/grid/*.png
+	rm -f image/image_storage/word/*.png
 
 .PHONY: all clean

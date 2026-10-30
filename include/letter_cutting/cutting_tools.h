@@ -1,5 +1,5 @@
-#ifndef TOOLS_H
-#define TOOLS_H
+#ifndef CUTTING_TOOLS_H
+#define CUTTING_TOOLS_H
 
 #include <SDL2/SDL.h>
 
@@ -21,4 +21,4 @@ void insert_letters_surface(struct letters_surface **head,
 void free_letters_surface(struct letters_surface *head);
 void free_head_surface(struct head_surface *head);
 
-#endif // TOOLS_H
+#endif // CUTTING_TOOLS_H

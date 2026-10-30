@@ -110,7 +110,7 @@ int main(int argc, char **argv) {
     free(vert_hist);
 
     // Saving the result
-    if (IMG_SavePNG(image, "image/cutting_storage/output_binarized.png")
+    if (IMG_SavePNG(image, "image/image_storage/output_binarized.png")
         != 0) {
         printf("Saving error : %s\n", IMG_GetError());
     } else {
