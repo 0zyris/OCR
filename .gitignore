@@ -1,15 +1,15 @@
-solver
-*.png
-!sample_images/*.png
-
 # Compiled files
 obj/
 *.o
 *.a
 *.so
+*.png
 
 # Executable
-/ocr
+solver
+app
+learn
+cutting
 
 # VS Code local settings
 .vscode/
@@ -21,3 +21,7 @@ vscode-backup
 *.out
 *.core
 core
+
+#Exception
+!image/sample_images/*.png
+!image/network_learning/*.png
