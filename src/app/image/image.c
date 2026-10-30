@@ -4,7 +4,7 @@
 #include <stdio.h>
 #include <math.h>
 
-#include "image.h"
+#include "image/image.h"
 
 SDL_Surface *image_load(const char *path)
 {

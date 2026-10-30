@@ -1,1 +1,28 @@
-Nothing here for now
+Prerequisites
+Install the required libraries:
+
+sudo apt install libsdl2-dev
+sudo apt install libsdl2-image-dev
+sudo apt install libgtk-3-dev
+
+Usage
+Cutting:
+./cutting <image_path> <word_or_option>
+Detects the grid, words, and letters in the image. 
+The extracted letters are then cropped and stored 
+in the image_storage directory.
+
+Solver:
+./solver <grid_path> <searched_word>
+Searches for the specified word in the grid and returns its starting 
+and ending coordinates if found.
+
+Learn:
+./learn
+Runs the neural network training and displays the learning results 
+using the XOR problem.
+
+OCR:
+./ocr
+Applies image preprocessing, including rotation correction 
+and black-and-white conversion.

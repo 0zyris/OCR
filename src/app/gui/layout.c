@@ -1,7 +1,7 @@
 #include <gtk/gtk.h>
-#include "layout.h"
-#include "callbacks.h"
-#include "image_view.h"
+#include "app/gui/layout.h"
+#include "app/gui/callbacks.h"
+#include "app/gui/image_view.h"
 
 static void add_class(GtkWidget *widget, const char *class_name)
 {

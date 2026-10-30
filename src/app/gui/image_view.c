@@ -1,5 +1,5 @@
 #include <stddef.h>
-#include "image_view.h"
+#include "app/gui/image_view.h"
 
 static GdkPixbuf *surface_to_pixbuf(SDL_Surface *surface)
 {

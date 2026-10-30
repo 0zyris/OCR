@@ -1,5 +1,5 @@
 #include <SDL2/SDL.h>
-#include "../include/tools.h"
+#include "letter_cutting/cutting_tools.h"
 
 struct head_surface *initialize_head_surface(struct letters_surface *letters) {
     struct head_surface *new = malloc(sizeof(struct head_surface));
