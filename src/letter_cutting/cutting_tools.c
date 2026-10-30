@@ -36,7 +36,7 @@ struct letters_surface *initialize_letters_surface(SDL_Surface *surface) {
     return new;
 }
 
-void insert_letters_surface(struct letters_surface **head, 
+void insert_letters_surface(struct letters_surface **head,
         struct letters_surface *new) {
     if(!new) {
         return;

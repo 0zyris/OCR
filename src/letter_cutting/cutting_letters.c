@@ -39,7 +39,7 @@ void crop_box(SDL_Surface *surface, int *xmin, int *xmax, int *ymin,
     if (SDL_MUSTLOCK(surface)) SDL_UnlockSurface(surface);
 }
 
-SDL_Surface *create_letter_surface(SDL_Surface *surface, int x, int y, 
+SDL_Surface *create_letter_surface(SDL_Surface *surface, int x, int y,
         int w, int h) {
     SDL_Rect rectangle = {
         .x = x,
@@ -47,7 +47,7 @@ SDL_Surface *create_letter_surface(SDL_Surface *surface, int x, int y,
         .w = w,
         .h = h
     };
-    SDL_Surface *subsurface = SDL_CreateRGBSurfaceWithFormat(0, w, h, 
+    SDL_Surface *subsurface = SDL_CreateRGBSurfaceWithFormat(0, w, h,
         surface->format->BitsPerPixel, surface->format->format);
     if(!subsurface) {
         return NULL;
@@ -56,9 +56,9 @@ SDL_Surface *create_letter_surface(SDL_Surface *surface, int x, int y,
     return subsurface;
 }
 
-// Isolate the letters from the grid and frame them in purple 
+// Isolate the letters from the grid and frame them in purple
 // as closely as possible.
-struct letters_surface *segment_letters(SDL_Surface *surface, int xmin, 
+struct letters_surface *segment_letters(SDL_Surface *surface, int xmin,
         int xmax, int ymin, int ymax, int grid) {
     int in_letter = 0;
     int letter_xmin = 0;
@@ -90,7 +90,7 @@ struct letters_surface *segment_letters(SDL_Surface *surface, int xmin,
                 int l_xmin = letter_xmin, l_xmax = x - 1;
                 int l_ymin = ymin, l_ymax = ymax;
                 crop_box(surface, &l_xmin, &l_xmax, &l_ymin, &l_ymax);
-                SDL_Surface *subsurface = create_letter_surface(surface, 
+                SDL_Surface *subsurface = create_letter_surface(surface,
                     l_xmin, l_ymin, l_xmax-l_xmin+1, l_ymax-l_ymin+1);
                 struct letters_surface *new_letter = 
                     initialize_letters_surface(subsurface);
@@ -114,7 +114,7 @@ struct letters_surface *segment_letters(SDL_Surface *surface, int xmin,
         int l_xmin = letter_xmin, l_xmax = xmax;
         int l_ymin = ymin, l_ymax = ymax;
         crop_box(surface, &l_xmin, &l_xmax, &l_ymin, &l_ymax);
-        SDL_Surface *subsurface2 = create_letter_surface(surface, l_xmin, 
+        SDL_Surface *subsurface2 = create_letter_surface(surface, l_xmin,
             l_ymin, l_xmax-l_xmin+1, l_ymax-l_ymin+1);
         struct letters_surface *new_letter2 = 
             initialize_letters_surface(subsurface2);
@@ -135,7 +135,7 @@ struct letters_surface *segment_letters(SDL_Surface *surface, int xmin,
 }
 
 // Isolate each word from the list and frame it in green as closely as possible
-struct head_surface *segment_word_list(SDL_Surface *surface, int xmin, 
+struct head_surface *segment_word_list(SDL_Surface *surface, int xmin,
         int xmax, int ymin, int ymax, int grid) {
     int in_word = 0;
     int word_ymin = 0;
@@ -208,7 +208,7 @@ struct head_surface *segment_word_list(SDL_Surface *surface, int xmin,
 }
 
 // test whether the word mélé has a grid using the histogram
-int has_grid(int xmin, int xmax, int ymin, int ymax, int* vert_hist, 
+int has_grid(int xmin, int xmax, int ymin, int ymax, int* vert_hist,
         int* horiz_hist)
 {
     int width = xmax - xmin + 1;
@@ -279,7 +279,7 @@ int compute_cell_margin(int xmin, int xmax, int ymin, int ymax, int *vert_hist,
 }
 
 //allows the green to be removed in the case without a grid
-void remove_green(SDL_Surface *surface, int xmin, int xmax, int ymin, 
+void remove_green(SDL_Surface *surface, int xmin, int xmax, int ymin,
         int ymax) {
     if (SDL_MUSTLOCK(surface)) SDL_LockSurface(surface);
     Uint32 *pixels = (Uint32 *)surface->pixels;
@@ -350,7 +350,7 @@ struct head_surface *segment_grid_letters_with_histogram(SDL_Surface *surface,
                 int l_ymax = horiz_lines[row + 1] - CELL_MARGIN;
                 crop_box(surface, &l_xmin, &l_xmax, &l_ymin, &l_ymax);
                 if (l_xmin>l_xmax || l_ymin>l_ymax) continue;
-                SDL_Surface *subsurface = create_letter_surface(surface, 
+                SDL_Surface *subsurface = create_letter_surface(surface,
                     l_xmin, l_ymin, l_xmax-l_xmin+1, l_ymax-l_ymin+1);
                 struct letters_surface *new_letter = 
                     initialize_letters_surface(subsurface);
@@ -360,7 +360,7 @@ struct head_surface *segment_grid_letters_with_histogram(SDL_Surface *surface,
                     return NULL; //error case
                 }
                 insert_letters_surface(&head_letters, new_letter);
-                draw_rectangle(surface, l_xmin, l_xmax, l_ymin, l_ymax, 128, 
+                draw_rectangle(surface, l_xmin, l_xmax, l_ymin, l_ymax, 128,
                     128, 0);
             }
             struct head_surface *new = initialize_head_surface(head_letters);

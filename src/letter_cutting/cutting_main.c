@@ -62,7 +62,7 @@ int main(int argc, char **argv) {
     int b1_xmin, b1_xmax, b1_ymin, b1_ymax;
     int b2_xmin, b2_xmax, b2_ymin, b2_ymax;
 
-    find_layout_and_blocks(vert_hist, image->w, horiz_hist, image->h, 
+    find_layout_and_blocks(vert_hist, image->w, horiz_hist, image->h,
                            &b1_xmin, &b1_xmax, &b1_ymin, &b1_ymax,
                            &b2_xmin, &b2_xmax, &b2_ymin, &b2_ymax);
 
@@ -79,13 +79,13 @@ int main(int argc, char **argv) {
         printf("-> BLOCK 1 is the GRID (Blue/Yellow)\n");
         printf("-> BLOCK 2 is the WORD LIST (Red/Green/Purple)\n");
         struct head_surface *grid_letters = 
-            segment_grid_letters_with_histogram(image, b1_xmin, b1_xmax, 
+            segment_grid_letters_with_histogram(image, b1_xmin, b1_xmax,
                 b1_ymin, b1_ymax, vert_hist, horiz_hist);
         draw_rectangle(image, b1_xmin, b1_xmax, b1_ymin, b1_ymax,
             0, 0, 255);
         draw_rectangle(image, b2_xmin, b2_xmax, b2_ymin, b2_ymax,
             255, 0, 0);
-        struct head_surface *word_letters = segment_word_list(image, 
+        struct head_surface *word_letters = segment_word_list(image,
             b2_xmin, b2_xmax, b2_ymin, b2_ymax, 0);
         save_surface(grid_letters, 1);
         save_surface(word_letters, 0);
@@ -93,7 +93,7 @@ int main(int argc, char **argv) {
         printf("-> BLOCK 2 is the GRID (Blue/Yellow)\n");
         printf("-> BLOCK 1 is the WORD LIST (Red/Green/Purple)\n");
         struct head_surface *grid_letters = 
-            segment_grid_letters_with_histogram(image, b2_xmin, b2_xmax, 
+            segment_grid_letters_with_histogram(image, b2_xmin, b2_xmax,
                 b2_ymin, b2_ymax, vert_hist, horiz_hist);
         draw_rectangle(image, b1_xmin, b1_xmax, b1_ymin, b1_ymax,
             255, 0, 0);
