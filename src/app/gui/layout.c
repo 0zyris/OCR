@@ -1,7 +1,7 @@
 #include <gtk/gtk.h>
-#include "app/gui/layout.h"
-#include "app/gui/callbacks.h"
-#include "app/gui/image_view.h"
+#include "../../../include/app/gui/layout.h"
+#include "../../../include/app/gui/callbacks.h"
+#include "../../../include/app/gui/image_view.h"
 
 static void add_class(GtkWidget *widget, const char *class_name)
 {
@@ -34,7 +34,7 @@ void layout_load_css(void)
     GError *error = NULL;
     // Run ./ocr from the project root.
     if (!gtk_css_provider_load_from_path(
-            provider, "src/gui/style.css", &error))
+            provider, "src/app/gui/style.css", &error))
     {
         g_warning("Unable to load src/gui/style.css: %s", error->message);
         g_clear_error(&error);

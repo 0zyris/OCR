@@ -1,4 +1,4 @@
-#include "network/learn.h"
+#include "../../include/network/learn.h"
 
 int main(void){
     srand(0);

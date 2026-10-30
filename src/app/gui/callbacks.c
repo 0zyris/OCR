@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <gtk/gtk.h>
 
-#include "app/gui/callbacks.h"
-#include "app/gui/image_view.h"
-#include "app/image/image.h"
+#include "../../../include/app/gui/callbacks.h"
+#include "../../../include/app/gui/image_view.h"
+#include "../../../include/app/image/image.h"
 
 static void show_status(AppData *data, const char *message)
 {

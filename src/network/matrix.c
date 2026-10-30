@@ -1,4 +1,4 @@
-#include "network/matrix.h"
+#include "../../include/network/matrix.h"
 
 
 Matrix *create_matrix(int rows, int cols){

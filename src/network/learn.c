@@ -1,4 +1,4 @@
-#include "network/learn.h"
+#include "../../include/network/learn.h"
 
 double random_weight(){
     //génère une valeur aléatoire entre -0.5 et 0.5

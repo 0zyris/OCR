@@ -1,7 +1,7 @@
 #include <SDL2/SDL.h>
-#include "letter_cutting/image_processing.h"
-#include "letter_cutting/cutting_letters.h"
-#include "letter_cutting/cutting_tools.h"
+#include "../../include/letter_cutting/image_processing.h"
+#include "../../include/letter_cutting/cutting_letters.h"
+#include "../../include/letter_cutting/cutting_tools.h"
 
 // Tighten a frame around the black pixels it contains
 void crop_box(SDL_Surface *surface, int *xmin, int *xmax, int *ymin,
@@ -380,11 +380,11 @@ void save_surface(struct head_surface *head, int grid) {
             char path[100];
             if(grid) {
                 snprintf(path, sizeof(path), 
-                    "image/image_storage/grid%d_%d.png", row, col);
+                    "image/cutting_storage/grid%d_%d.png", row, col);
                 SDL_SaveBMP(letters->surface, path);
             } else {
                 snprintf(path, sizeof(path), 
-                    "image/image_storage/word%d_%d.png", row, col);
+                    "image/cutting_storage/word%d_%d.png", row, col);
                 SDL_SaveBMP(letters->surface, path);
             }
             

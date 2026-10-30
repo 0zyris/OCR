@@ -2,9 +2,9 @@
 #include <err.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
-#include "letter_cutting/image_processing.h"
-#include "letter_cutting/cutting_letters.h"
-#include "letter_cutting/cutting_tools.h"
+#include "../../include/letter_cutting/image_processing.h"
+#include "../../include/letter_cutting/cutting_letters.h"
+#include "../../include/letter_cutting/cutting_tools.h"
 
 // Function to load an image into an SDL_Surface
 SDL_Surface* load_image(const char* path) {
@@ -110,7 +110,8 @@ int main(int argc, char **argv) {
     free(vert_hist);
 
     // Saving the result
-    if (IMG_SavePNG(image, "output_binarized.png") != 0) {
+    if (IMG_SavePNG(image, "image/cutting_storage/output_binarized.png")
+        != 0) {
         printf("Saving error : %s\n", IMG_GetError());
     } else {
         printf("Result saved as 'output_binarized.png'.\n");

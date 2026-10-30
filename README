@@ -22,7 +22,7 @@ Learn:
 Runs the neural network training and displays the learning results 
 using the XOR problem.
 
-OCR:
-./ocr
+APP:
+./app
 Applies image preprocessing, including rotation correction 
 and black-and-white conversion.

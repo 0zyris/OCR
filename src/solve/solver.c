@@ -1,4 +1,4 @@
-#include "solve/solver.h"
+#include "../../include/solve/solver.h"
 
 void free_grid(Grid *grid){
 //detruit la grille
