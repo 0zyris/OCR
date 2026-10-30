@@ -8,10 +8,10 @@
 #include "matrix.h"
 
 typedef struct {
-    Matrix *W1; //poids de couche cachée
-    Matrix *b1; //biais de couche cachée
-    Matrix *W2; //poids de couche de sortie
-    Matrix *b2; //biais de couche de sortie
+    Matrix *W1; //weights hidden layer
+    Matrix *b1; //bias hidden layer
+    Matrix *W2; //weights out layer
+    Matrix *b2; //weights out layer
 } Network;
 
 typedef struct {

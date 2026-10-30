@@ -1,14 +1,14 @@
 #include "../../include/solve/solver.h"
 
 void free_grid(Grid *grid){
-//detruit la grille
+//destroys the grid 
     free(grid->cells);
     free(grid);
     grid = NULL;
 }
 
 Grid *init_grid(size_t rows, size_t cols){
-// Initisialise une grille de rows x cols
+// Init a grid of x rows and x cols
     Grid *grid = malloc(sizeof(Grid));
     if (grid == NULL){
         return NULL;
@@ -24,7 +24,7 @@ Grid *init_grid(size_t rows, size_t cols){
 }
 
 void print_grid(Grid *G){
-//Affiche la grille G
+//Displays grid G
 
     int max_cols = G->cols;
 
@@ -37,7 +37,7 @@ void print_grid(Grid *G){
 }
 
 Grid *get_grid(char* filename){
-//Charge une grille de lettres depuis un fichier
+//Loads a grid of letters from a file
     FILE *file = fopen(filename,"r");
 
     char* line = NULL;

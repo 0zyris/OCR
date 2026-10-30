@@ -2,7 +2,7 @@
 
 
 Matrix *create_matrix(int rows, int cols){
-//créer une matrice de x lignes et y colonnes
+//create a matrix with x rows and y columns
     Matrix *matrix = malloc(sizeof(Matrix));
 
     if (matrix == NULL)
@@ -17,7 +17,7 @@ Matrix *create_matrix(int rows, int cols){
 }
 
 void free_matrix(Matrix *m){
-//free une matrice
+//destroys a matrix m
 
     free(m->data);
     free(m);
@@ -25,7 +25,7 @@ void free_matrix(Matrix *m){
 }
 
 void print_matrix(Matrix *X){
-//Affiche une matrice
+//Displays a matrix X
 
     int max_cols = X->cols;
 
@@ -37,7 +37,7 @@ void print_matrix(Matrix *X){
     }
 }
 
-//================== Opérations ========================//
+//================== Operations ========================//
 
 Matrix *add_matrix(Matrix *m1, Matrix *m2){
 //Addition de deux matrices -> Doivent avoir même dimensions
@@ -60,8 +60,7 @@ Matrix *add_matrix(Matrix *m1, Matrix *m2){
 }
 
 Matrix *sub_matrix(Matrix *m1, Matrix *m2){
-//Soustration de deux matrices -> Doivent avoir même diemnsions
-    //
+//Adding two matrices -> Must have the same dimensions
     if (m1->rows != m2->rows || m1->cols != m2->cols){
         return NULL;
     }
@@ -82,7 +81,7 @@ Matrix *sub_matrix(Matrix *m1, Matrix *m2){
 }
 
 Matrix *mult_matrix(Matrix *m1, Matrix *m2){
-//Multiplication de deux matrices
+//Multiplication of two matrices
 
     if (m1->cols != m2->rows){
         return NULL;
@@ -103,7 +102,7 @@ Matrix *mult_matrix(Matrix *m1, Matrix *m2){
 }
 
 Matrix *scalar_mult_matrix(Matrix *m, double scalar){
-//multiplie la matrice par un scalaire
+//Multiplies the matrix by a scalar
 
     Matrix *result = create_matrix(m->rows, m->cols);
     for (int i = 0; i< result->rows;i++){
@@ -115,7 +114,7 @@ Matrix *scalar_mult_matrix(Matrix *m, double scalar){
 }
 
 Matrix *mult_by_ele_matrix(Matrix *m1, Matrix *m2){
-//Multiplie éléments par éléments -> Doivent avoir même dimensions
+//Multiplies element-wise -> Must have the same dimensions
  
     if (m1->rows != m2->rows || m1->cols != m2->cols){
         return NULL;
@@ -134,7 +133,7 @@ Matrix *mult_by_ele_matrix(Matrix *m1, Matrix *m2){
 }
 
 Matrix *fct_matrix(Matrix *m1, double (*fct)(double)){
-//Applique une fonction à tous les éléments d'une matrice
+//Applies a function to all elements of a matrix
  
     Matrix *result = create_matrix(m1->rows,m1->cols);
     int max_cols = m1->cols;
@@ -148,7 +147,7 @@ Matrix *fct_matrix(Matrix *m1, double (*fct)(double)){
 }
 
 Matrix *transpose_matrix(Matrix *m){
-//Calcule la transposé de la matrice
+//Calculates the transpose of the matrix
 
     Matrix *result = create_matrix(m->cols, m->rows);
     for (int i = 0; i < m->rows; i++){
@@ -160,7 +159,7 @@ Matrix *transpose_matrix(Matrix *m){
 }
 
 Matrix *sum_rows(Matrix *m){
-    //calcule la somme des lignes d'une matrice ex : 3x6 -> 1x6
+//calculates the sum of the rows of a matrix, e.g., 3x6 -> 1x6
 
     Matrix *result = create_matrix(1, m->cols);
     for (int j = 0; j < m->cols; j++)

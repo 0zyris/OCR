@@ -16,12 +16,12 @@ int main(void){
         y->data[i] = ys[i];
     }
 
-    //Réseau
+    //Network
     Network *net = network_init(2, 4, 1);
     double lr = 1.0;
     int repeats = 10000;
 
-    //Apprentissage
+    //Learning
     for (int repeat = 0; repeat < repeats; repeat++){
         ForwardCache *cache = forward(net, X);
 
@@ -36,7 +36,7 @@ int main(void){
         free_gradients(grads);
     }
 
-    //Fin on passe les données
+    //Test
     ForwardCache *final = forward(net, X);
     printf("Résultats :\n");
     for (int i = 0; i < 4; i++){
