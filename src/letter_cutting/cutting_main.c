@@ -25,11 +25,7 @@ SDL_Surface* load_image(const char* path) {
     return optimized_surface;
 }
 
-int main(int argc, char **argv) {
-    if (argc != 3) {
-        errx(EXIT_FAILURE, "Use: %s <file_image> <word_or_option>",
-            argv[0]);
-    }
+void run_image_pipeline(const char *filepath) {
 
     if (SDL_Init(SDL_INIT_VIDEO) != 0) errx(EXIT_FAILURE,
         "SDL initialization error : %s", SDL_GetError());
@@ -40,8 +36,8 @@ int main(int argc, char **argv) {
             IMG_GetError());
     }
 
-    SDL_Surface* image = load_image(argv[1]);
-    printf("Image '%s' successfully uploaded.\n", argv[1]);
+    SDL_Surface* image = load_image(filepath);
+    printf("Image '%s' successfully uploaded.\n", filepath);
     printf("Dimensions : %d x %d pixels\n", image->w, image->h);
 
     binarize_image(image);
@@ -121,5 +117,5 @@ int main(int argc, char **argv) {
     IMG_Quit();
     SDL_Quit();
     
-    return 0;
+    return;
 }

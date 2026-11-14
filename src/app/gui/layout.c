@@ -189,6 +189,28 @@ void layout_build(GtkApplication *app, AppData *data)
                            "0° restores the loaded image", "small-hint"),
                        FALSE, FALSE, 0);
 
+    // Lancement de l'OCR
+    GtkWidget *ocr_card = gtk_box_new(GTK_ORIENTATION_VERTICAL, 10);
+    add_class(ocr_card, "tool-card");
+    gtk_box_pack_start(GTK_BOX(side), ocr_card, FALSE, FALSE, 0);
+
+    gtk_box_pack_start(GTK_BOX(ocr_card),
+                    make_label("TRAITEMENT", "eyebrow"), FALSE, FALSE, 0);
+                    
+    // On relie le bouton à la fonction on_start_ocr créée dans callbacks.c
+    GtkWidget *ocr_button = make_button(
+        "Lancer l'OCR",
+        "primary-button",
+        G_CALLBACK(on_start_ocr),
+        data);
+    gtk_box_pack_start(GTK_BOX(ocr_card), ocr_button, FALSE, FALSE, 0);
+
+    gtk_box_pack_start(GTK_BOX(ocr_card),
+                    make_label(
+                        "Binarisation, segmentation et découpage",
+                        "small-hint"),
+                    FALSE, FALSE, 0);
+
     GtkWidget *tip = make_label(
         "Tip: adjust the angle, then apply.\nThe original image is preserved.",
         "sidebar-tip");
