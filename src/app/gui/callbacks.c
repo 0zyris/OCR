@@ -1,9 +1,11 @@
 #include <stdio.h>
 #include <gtk/gtk.h>
+#include <SDL2/SDL_image.h>
 
 #include "../../../include/app/gui/callbacks.h"
 #include "../../../include/app/gui/image_view.h"
 #include "../../../include/app/image/image.h"
+#include "letter_cutting/image_processing.h"
 
 static void show_status(AppData *data, const char *message)
 {
@@ -157,4 +159,29 @@ void on_angle_insert_text(GtkEditable *editable, const gchar *text,
     if (!valid)
         g_signal_stop_emission_by_name(editable, "insert-text");
     g_string_free(result, TRUE);
+}
+
+void on_start_ocr(GtkWidget *button, gpointer user_data)
+{
+    (void)button;
+    AppData *data = user_data;
+    
+    if (!(data->surface)){
+        show_status(data, "Aucune image à traiter.");
+        return;
+    }
+    
+    // Sauvegarde de l'image pivotée/prétraitée dans un fichier temporaire
+    const char *temp_file = "image/image_storage/temp_processing.png";
+    if (IMG_SavePNG(data->surface, temp_file) != 0){
+        show_status(data, "Erreur lors de la création du fichier temporaire.");
+        return;
+    }
+    
+    show_status(data, "OCR en cours : Binarisation et découpage...");
+    
+    // Lancement du pipeline sur l'image modifiée
+    run_image_pipeline(temp_file);
+    
+    show_status(data, "OCR terminé ! Lettres extraites dans image_storage.");
 }

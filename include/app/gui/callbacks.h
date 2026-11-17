@@ -9,5 +9,6 @@ void on_rotate_right(GtkWidget *button, gpointer user_data);
 void on_rotate_custom(GtkWidget *button, gpointer user_data);
 void on_angle_insert_text(GtkEditable *editable, const gchar *text,
                           gint length, gint *position, gpointer user_data);
+void on_start_ocr(GtkWidget *button, gpointer user_data);
 
 #endif

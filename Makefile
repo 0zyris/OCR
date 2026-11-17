@@ -1,13 +1,13 @@
 CC = gcc
 
-CFLAGS = -Wall -Wextra -Werror -Iinclude -g -O0 -fsanitize=address \
+CFLAGS = -Wall -Wextra -Werror -Iinclude -g -O0 \
 	`pkg-config --cflags sdl2 SDL2_image`
 
 LDLIBS = `pkg-config --libs sdl2 SDL2_image`
 
 APP_PKGS = gtk+-3.0 sdl2 SDL2_image
 APP_CFLAGS = $(shell pkg-config --cflags $(APP_PKGS)) \
-	-Wall -Wextra -Werror -std=c11 -g
+    -Wall -Wextra -Werror -std=c11 -g -Iinclude
 APP_LDLIBS = $(shell pkg-config --libs $(APP_PKGS)) -lm
 
 
@@ -40,7 +40,7 @@ LEARN_OBJ   = $(LEARN_SRC:src/%.c=obj/%.o)
 APP_OBJ     = $(APP_SRC:src/%.c=obj/%.o)
 
 
-all: solver learn cutting app
+all: solver learn app
 
 solver: $(SOLVER_OBJ)
 	$(CC) $(CFLAGS) -o $@ $^
@@ -51,7 +51,7 @@ learn: $(LEARN_OBJ)
 cutting: $(CUTTING_OBJ)
 	$(CC) $(CFLAGS) -o $@ $^ $(LDLIBS)
 
-app: $(APP_OBJ)
+app: $(APP_OBJ) $(CUTTING_OBJ)
 	$(CC) -o $@ $^ $(APP_LDLIBS)
 
 
