@@ -1,5 +1,5 @@
 #include <SDL2/SDL.h>
-#include "image_processing.h"
+#include "layout.h"
 
 // Calculate Otsu's threshold
 int calculate_otsu_threshold(SDL_Surface *surface) {

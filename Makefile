@@ -33,6 +33,7 @@ APP_SRC = \
 	src/app/gui/image_view.c \
 	src/app/image/image.c
 
+IMGPROC_SRC = src/image_processing/image_processing.c
 
 CUTTING_OBJ = $(CUTTING_SRC:src/%.c=obj/%.o)
 SOLVER_OBJ  = $(SOLVER_SRC:src/%.c=obj/%.o)

@@ -3,7 +3,7 @@
 #include "app.h"
 #include "app_data.h"
 #include "layout.h"
-#include "../image/image.h"
+#include "image_processing.h"
 
 static void on_window_destroy(GtkWidget *widget, gpointer user_data)
 {

@@ -2,9 +2,11 @@
 #include <err.h>
 #include <SDL2/SDL.h>
 #include <SDL2/SDL_image.h>
-#include "image_processing.h"
+#include "layout.h"
 #include "cutting_letters.h"
 #include "cutting_tools.h"
+#include "image_processing.h"
+#include "letter_cutting.h"
 
 // Function to load an image into an SDL_Surface
 SDL_Surface* load_image(const char* path) {

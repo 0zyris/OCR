@@ -2,8 +2,7 @@
 #include <SDL2/SDL_image.h>
 #include <stdio.h>
 #include <math.h>
-
-#include "image.h"
+#include "image_processing.h"
 
 SDL_Surface *image_load(const char *path)
 {
@@ -305,4 +304,75 @@ SDL_Surface *rotate_image(const SDL_Surface *surface, int angle)
         SDL_UnlockSurface(source);
 
     return rotated;
+}
+
+
+// Calculate Otsu's threshold
+static int calculate_otsu_threshold(SDL_Surface *surface) {
+    Uint32 *pixels = (Uint32 *)surface->pixels;
+    int pixel_count = surface->w * surface->h;
+    SDL_PixelFormat *format = surface->format;
+    Uint8 r, g, b;
+    int histogram[256] = {0};
+
+    // 1. Create the histogram of gray levels
+    for (int i = 0; i < pixel_count; i++) {
+        SDL_GetRGB(pixels[i], format, &r, &g, &b);
+        Uint8 luminance = 0.3 * r + 0.59 * g + 0.11 * b;
+        histogram[luminance]++;
+    }
+
+    // 2. Otsu's Method
+    int total = pixel_count;
+    float sum = 0;
+    for (int i = 0; i < 256; i++) sum += i * histogram[i];
+
+    float sumB = 0;
+    int wB = 0, wF = 0;
+    float varMax = 0;
+    int threshold = 0;
+
+    for (int i = 0; i < 256; i++) {
+        wB += histogram[i];
+        if (wB == 0) continue;
+        wF = total - wB;
+        if (wF == 0) break;
+
+        sumB += (float)(i * histogram[i]);
+        float mB = sumB / wB;
+        float mF = (sum - sumB) / wF;
+
+        float varBetween = (float)wB * (float)wF * (mB - mF) * (mB - mF);
+        if (varBetween > varMax) {
+            varMax = varBetween;
+            threshold = i;
+        }
+    }
+    return threshold;
+}
+
+// Binarization function
+void binarize_image(SDL_Surface *surface) {
+    if (SDL_MUSTLOCK(surface)) SDL_LockSurface(surface);
+
+    int threshold = calculate_otsu_threshold(surface);
+    
+    Uint32 *pixels = (Uint32 *)surface->pixels;
+    int pixel_count = surface->w * surface->h;
+    SDL_PixelFormat *format = surface->format;
+    Uint8 r, g, b;
+
+    for (int i = 0; i < pixel_count; i++) {
+        SDL_GetRGB(pixels[i], format, &r, &g, &b);
+        Uint8 luminance = 0.3 * r + 0.59 * g + 0.11 * b;
+        
+        // If darker than the dynamic threshold, set to black
+        if (luminance < threshold) {
+            pixels[i] = SDL_MapRGB(format, 0, 0, 0);
+        } else {
+            pixels[i] = SDL_MapRGB(format, 255, 255, 255);
+        }
+    }
+
+    if (SDL_MUSTLOCK(surface)) SDL_UnlockSurface(surface);
 }

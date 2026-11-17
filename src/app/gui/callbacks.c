@@ -4,7 +4,7 @@
 
 #include "callbacks.h"
 #include "image_view.h"
-#include "../image/image.h"
+#include "image_processing.h"
 #include "letter_cutting.h"
 
 static void show_status(AppData *data, const char *message)

@@ -1,5 +1,5 @@
 #include <SDL2/SDL.h>
-#include "image_processing.h"
+#include "layout.h"
 #include "cutting_letters.h"
 #include "cutting_tools.h"
 
