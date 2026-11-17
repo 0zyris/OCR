@@ -40,10 +40,10 @@ LEARN_OBJ   = $(LEARN_SRC:src/%.c=obj/%.o)
 APP_OBJ     = $(APP_SRC:src/%.c=obj/%.o)
 
 
-all: solver learn app
+all: learn main
 
-solver: $(SOLVER_OBJ)
-	$(CC) $(CFLAGS) -o $@ $^
+#solver: $(SOLVER_OBJ)
+#	$(CC) $(CFLAGS) -o $@ $^
 
 learn: $(LEARN_OBJ)
 	$(CC) $(CFLAGS) -o $@ $^ -lm
@@ -51,7 +51,7 @@ learn: $(LEARN_OBJ)
 cutting: $(CUTTING_OBJ)
 	$(CC) $(CFLAGS) -o $@ $^ $(LDLIBS)
 
-app: $(APP_OBJ) $(CUTTING_OBJ)
+main: $(APP_OBJ) $(CUTTING_OBJ)
 	$(CC) -o $@ $^ $(APP_LDLIBS)
 
 
@@ -66,7 +66,7 @@ obj/%.o: src/%.c
 
 
 clean:
-	rm -f solver learn cutting app
+	rm -f learn cutting main
 	rm -rf obj
 	rm -f image/image_storage/*.png
 	rm -f image/image_storage/grid/*.png

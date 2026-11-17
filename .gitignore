@@ -7,7 +7,7 @@ obj/
 
 # Executable
 solver
-app
+main
 learn
 cutting
 
@@ -25,3 +25,4 @@ core
 #Exception
 !image/sample_images/*.png
 !image/network_learning/*.png
+shell.nix

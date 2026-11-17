@@ -1,10 +1,7 @@
 #ifndef SOLVER_H
 #define SOLVER_H
 
-#include <stdlib.h>
-#include <string.h>
-#include <stdio.h>
-
+#include <stddef.h>
 
 typedef struct {
     char *cells;

@@ -1,7 +1,7 @@
 #include <SDL2/SDL.h>
-#include "../../include/letter_cutting/image_processing.h"
-#include "../../include/letter_cutting/cutting_letters.h"
-#include "../../include/letter_cutting/cutting_tools.h"
+#include "image_processing.h"
+#include "cutting_letters.h"
+#include "cutting_tools.h"
 
 // Tighten a frame around the black pixels it contains
 void crop_box(SDL_Surface *surface, int *xmin, int *xmax, int *ymin,

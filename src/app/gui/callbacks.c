@@ -2,10 +2,10 @@
 #include <gtk/gtk.h>
 #include <SDL2/SDL_image.h>
 
-#include "../../../include/app/gui/callbacks.h"
-#include "../../../include/app/gui/image_view.h"
-#include "../../../include/app/image/image.h"
-#include "letter_cutting/image_processing.h"
+#include "callbacks.h"
+#include "image_view.h"
+#include "../image/image.h"
+#include "letter_cutting.h"
 
 static void show_status(AppData *data, const char *message)
 {

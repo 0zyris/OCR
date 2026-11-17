@@ -1,4 +1,7 @@
-#include "../../include/solve/solver.h"
+#include "../../include/solver.h"
+#include <stdio.h>
+#include <string.h>
+#include <stdlib.h>
 
 void free_grid(Grid *grid){
 //destroys the grid 
@@ -120,7 +123,7 @@ int find_word(const Grid *g, const char *word,
 }
 
 
-
+/*
 int main(int argc, char *argv[]){
     if (argc != 3){
         fprintf(stderr, "Usage: %s <file> <word>\n", argv[0]);
@@ -147,4 +150,4 @@ int main(int argc, char *argv[]){
 
     free_grid(g);
     return 0;
-}
+}*/

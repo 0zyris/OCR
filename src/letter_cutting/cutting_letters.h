@@ -2,6 +2,7 @@
 #define CUTTING_LETTERS_H
 
 #include <SDL2/SDL.h>
+#include "cutting_tools.h"
 
 void crop_box(SDL_Surface *surface, int *xmin, int *xmax, int *ymin,
     int *ymax);

@@ -1,9 +1,9 @@
 #include <gtk/gtk.h>
 
-#include "../../../include/app/gui/app.h"
-#include "../../../include/app/gui/app_data.h"
-#include "../../../include/app/gui/layout.h"
-#include "../../../include/app/image/image.h"
+#include "app.h"
+#include "app_data.h"
+#include "layout.h"
+#include "../image/image.h"
 
 static void on_window_destroy(GtkWidget *widget, gpointer user_data)
 {

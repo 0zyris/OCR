@@ -1,4 +1,4 @@
-#include "../../include/network/learn.h"
+#include "learn.h"
 
 double random_weight(){
     return ((double)rand() / RAND_MAX) - 0.5;

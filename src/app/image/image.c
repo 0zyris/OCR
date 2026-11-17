@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <math.h>
 
-#include "../../../include/app/image/image.h"
+#include "image.h"
 
 SDL_Surface *image_load(const char *path)
 {
