@@ -45,31 +45,6 @@ int calculate_otsu_threshold(SDL_Surface *surface) {
     return threshold;
 }
 
-// Binarization function
-void binarize_image(SDL_Surface *surface) {
-    if (SDL_MUSTLOCK(surface)) SDL_LockSurface(surface);
-
-    int threshold = calculate_otsu_threshold(surface);
-    
-    Uint32 *pixels = (Uint32 *)surface->pixels;
-    int pixel_count = surface->w * surface->h;
-    SDL_PixelFormat *format = surface->format;
-    Uint8 r, g, b;
-
-    for (int i = 0; i < pixel_count; i++) {
-        SDL_GetRGB(pixels[i], format, &r, &g, &b);
-        Uint8 luminance = 0.3 * r + 0.59 * g + 0.11 * b;
-        
-        // If darker than the dynamic threshold, set to black
-        if (luminance < threshold) {
-            pixels[i] = SDL_MapRGB(format, 0, 0, 0);
-        } else {
-            pixels[i] = SDL_MapRGB(format, 255, 255, 255);
-        }
-    }
-
-    if (SDL_MUSTLOCK(surface)) SDL_UnlockSurface(surface);
-}
 
 void compute_horizontal_histogram(SDL_Surface *surface, int *histogram) {
     if (SDL_MUSTLOCK(surface)) {

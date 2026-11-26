@@ -13,8 +13,8 @@ APP_LDLIBS = $(shell pkg-config --libs $(APP_PKGS)) -lm
 
 CUTTING_SRC = \
 	src/letter_cutting/cutting_main.c \
-	src/letter_cutting/image_processing.c \
 	src/letter_cutting/cutting_letters.c \
+	src/letter_cutting/layout.c \
 	src/letter_cutting/cutting_tools.c
 
 SOLVER_SRC = \
@@ -30,8 +30,7 @@ APP_SRC = \
 	src/app/gui/app.c \
 	src/app/gui/layout.c \
 	src/app/gui/callbacks.c \
-	src/app/gui/image_view.c \
-	src/app/image/image.c
+	src/app/gui/image_view.c 
 
 IMGPROC_SRC = src/image_processing/image_processing.c
 
@@ -39,6 +38,7 @@ CUTTING_OBJ = $(CUTTING_SRC:src/%.c=obj/%.o)
 SOLVER_OBJ  = $(SOLVER_SRC:src/%.c=obj/%.o)
 LEARN_OBJ   = $(LEARN_SRC:src/%.c=obj/%.o)
 APP_OBJ     = $(APP_SRC:src/%.c=obj/%.o)
+IMGPROC_OBJ = $(IMGPROC_SRC:src/%.c=obj/%.o)
 
 
 all: learn main
@@ -49,10 +49,10 @@ all: learn main
 learn: $(LEARN_OBJ)
 	$(CC) $(CFLAGS) -o $@ $^ -lm
 
-cutting: $(CUTTING_OBJ)
+cutting: $(CUTTING_OBJ) $(IMGPROC_SRC)
 	$(CC) $(CFLAGS) -o $@ $^ $(LDLIBS)
 
-main: $(APP_OBJ) $(CUTTING_OBJ)
+main: $(APP_OBJ) $(CUTTING_OBJ) $(IMGPROC_OBJ)
 	$(CC) -o $@ $^ $(APP_LDLIBS)
 
 
