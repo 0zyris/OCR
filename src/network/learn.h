@@ -42,4 +42,8 @@ void update_weights(Network *network, Gradients *grads, double lr);
 void free_cache(ForwardCache *c);
 void free_gradients(Gradients *g);
 void free_network(Network *n);
+
+Matrix *softmax(Matrix *Z);
+ForwardCache *forward_softmax(Network *network, Matrix *X);
+double cost_softmax(Matrix *A, Matrix *y);
 #endif

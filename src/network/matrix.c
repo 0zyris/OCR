@@ -89,13 +89,13 @@ Matrix *mult_matrix(Matrix *m1, Matrix *m2){
     Matrix *result = create_matrix(m1->rows,m2->cols);
     int max_cols = result->cols;
 
+    #pragma omp parallel for
     for (int i = 0; i< result->rows;i++){
-        for (int j=0; j< result->cols;j++){
-            double sum = 0;
-            for (int k = 0; k < m1->cols;k++){
-                sum =sum + m1->data[i*m1->cols + k]* m2->data[k*m2->cols + j];
+        for (int k = 0; k < m1->cols;k++){
+            double a = m1->data[i*m1->cols + k];
+            for (int j=0; j< result->cols;j++){
+                result->data[i*max_cols + j] += a * m2->data[k*m2->cols + j];
             }
-            result->data[i*max_cols + j] = sum;
         }
     }
     return result;

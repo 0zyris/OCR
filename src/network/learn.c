@@ -1,8 +1,9 @@
 #include "learn.h"
 
-double random_weight(){
-    return ((double)rand() / RAND_MAX) - 0.5;
+double random_weight(double limit){
+    return (((double)rand() / RAND_MAX) - 0.5) * 2.0 * limit;
 }
+
 
 Network *network_init(int input_size, int hidden_size, int output_size){
     //Initialize the network with weights and bias for each layer
@@ -13,10 +14,12 @@ Network *network_init(int input_size, int hidden_size, int output_size){
     network->W2 = create_matrix(hidden_size, output_size);
     network->b2 = create_matrix(1, output_size);
 
+    double lim1 = sqrt(6.0 / (input_size + hidden_size));
+    double lim2 = sqrt(6.0 / (hidden_size + output_size));
     for (int i = 0; i < network->W1->rows * network->W1->cols; i++)
-        network->W1->data[i] = random_weight();
+        network->W1->data[i] = random_weight(lim1);
     for (int i = 0; i < network->W2->rows * network->W2->cols; i++)
-        network->W2->data[i] = random_weight();
+        network->W2->data[i] = random_weight(lim2);
 
     return network;
 }
@@ -185,4 +188,45 @@ void free_network(Network *n){
     free_matrix(n->W2);
     free_matrix(n->b2);
     free(n);
+}
+
+Matrix *softmax(Matrix *Z){
+    //Applies the softmax function to each row of Z
+    Matrix *A = create_matrix(Z->rows,Z->cols);
+    for (int i = 0; i < Z->rows; i++){
+        double max = Z->data[i*Z->cols];
+        for (int j = 1; j < Z->cols; j++){
+            if (Z->data[i*Z->cols + j] > max)
+                max = Z->data[i*Z->cols + j];
+        }
+        double sum = 0;
+        for (int j = 0; j < Z->cols; j++){
+            A->data[i*Z->cols + j] = exp(Z->data[i*Z->cols + j] - max);
+            sum += A->data[i*Z->cols + j];
+        }
+        for (int j = 0; j < Z->cols; j++){
+            A->data[i*Z->cols + j] /= sum;
+        }
+    }
+    return A;
+}
+
+ForwardCache *forward_softmax(Network *network, Matrix *X){
+    //Same as forward but forsoftmax
+    ForwardCache *cache = malloc(sizeof(ForwardCache));
+    cache->z1 = linear_forward(X, network->W1, network->b1);
+    cache->a1 = sigmoid(cache->z1);
+    cache->z2 = linear_forward(cache->a1, network->W2, network->b2);
+    cache->a2 = softmax(cache->z2);
+    return cache;
+}
+
+double cost_softmax(Matrix *A, Matrix *y){
+    //Cost of softmax
+    double sum = 0;
+    for (int i = 0; i < A->rows * A->cols; i++){
+        if (y->data[i] > 0)
+            sum += y->data[i] * log(A->data[i] + 1e-12);
+    }
+    return -sum / A->rows;
 }
