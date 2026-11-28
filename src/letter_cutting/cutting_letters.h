@@ -4,6 +4,11 @@
 #include <SDL2/SDL.h>
 #include "cutting_tools.h"
 
+struct Point {
+    int x;
+    int y;
+};
+
 void crop_box(SDL_Surface *surface, int *xmin, int *xmax, int *ymin,
     int *ymax);
 struct head_surface *segment_word_list(SDL_Surface *surface, int xmin,

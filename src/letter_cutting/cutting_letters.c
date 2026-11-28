@@ -39,6 +39,57 @@ void crop_box(SDL_Surface *surface, int *xmin, int *xmax, int *ymin,
     if (SDL_MUSTLOCK(surface)) SDL_UnlockSurface(surface);
 }
 
+//allows the green to be removed in the case without a grid
+void remove_green(SDL_Surface *surface, int xmin, int xmax, int ymin,
+        int ymax) {
+    if (SDL_MUSTLOCK(surface)) SDL_LockSurface(surface);
+    Uint32 *pixels = (Uint32 *)surface->pixels;
+    SDL_PixelFormat *format = surface->format;
+    Uint32 green = SDL_MapRGB(format, 0, 255, 0);
+    Uint32 white = SDL_MapRGB(format, 255, 255, 255);
+    for (int y = ymin; y <= ymax; y++) {
+        if (y < 0 || y >= surface->h) continue;
+        for (int x = xmin; x <= xmax; x++) {
+            if (x < 0 || x >= surface->w) continue;
+            if (pixels[y * surface->w + x] == green) {
+                pixels[y * surface->w + x] = white;
+            }
+        }
+    }
+
+    if (SDL_MUSTLOCK(surface)) SDL_UnlockSurface(surface);
+}
+
+SDL_Surface *normalize_letter_surface(SDL_Surface *subsurface) {
+    if(!subsurface) {
+        return NULL;
+    }
+    SDL_Surface *dest = SDL_CreateRGBSurfaceWithFormat(
+        0,
+        28,
+        28,
+        subsurface->format->BitsPerPixel,
+        subsurface->format->format
+    );
+    if(!dest) {
+        return NULL;
+    }
+    SDL_FillRect(dest, NULL, SDL_MapRGB(dest->format, 255, 255, 255));
+    double scale_x = 28.0/subsurface->w;
+    double scale_y = 28.0/subsurface->h;
+    double scale = (scale_x < scale_y) ? scale_x : scale_y;
+    int new_w = (int)(subsurface->w * scale);
+    int new_h = (int)(subsurface->h * scale);
+    SDL_Rect dst_rect = {
+        .x = (28 - new_w) / 2,
+        .y = (28 - new_h) / 2,
+        .w = new_w,
+        .h = new_h
+    };
+    SDL_BlitScaled(subsurface, NULL, dest, &dst_rect);
+    return dest;
+}
+
 SDL_Surface *create_letter_surface(SDL_Surface *surface, int x, int y,
         int w, int h) {
     SDL_Rect rectangle = {
@@ -53,84 +104,114 @@ SDL_Surface *create_letter_surface(SDL_Surface *surface, int x, int y,
         return NULL;
     }
     SDL_BlitSurface(surface, &rectangle, subsurface, NULL);
-    return subsurface;
+    remove_green(subsurface, -1, w+1,-1, h+1);
+    SDL_Surface *normalized = normalize_letter_surface(subsurface);
+    SDL_FreeSurface(subsurface);
+    return normalized;
+}
+
+int is_black(SDL_Surface *surface, int x, int y)
+{
+    if (x < 0 || x >= surface->w || y < 0 || y >= surface->h) {
+        return 0;
+    }
+    Uint32 *pixels = (Uint32 *)surface->pixels;
+    Uint8 r, g, b;
+    SDL_GetRGB( pixels[y * surface->w + x], surface->format,
+        &r, &g, &b);
+    return ((r + g + b) < 150);
+}
+
+void bfs_component(SDL_Surface *surface,int start_x,int start_y, char *visited,
+                   int *xmin,int *xmax,int *ymin,int *ymax,int word_xmin,
+                   int word_xmax,int word_ymin,int word_ymax)
+{
+    int max_size = surface->w * surface->h;
+    struct Point *queue = malloc(max_size * sizeof(struct Point));
+    int front = 0;
+    int back = 0;
+    queue[back++] = (struct Point){start_x, start_y};
+    visited[start_y * surface->w + start_x] = 1;
+    *xmin = *xmax = start_x;
+    *ymin = *ymax = start_y;
+    while (front < back) {
+        struct Point p = queue[front++];
+        if (p.x < *xmin)
+            *xmin = p.x;
+        if (p.x > *xmax)
+            *xmax = p.x;
+        if (p.y < *ymin)
+            *ymin = p.y;
+        if (p.y > *ymax)
+            *ymax = p.y;
+        static const int dx[4] = {1, -1, 0, 0};
+        static const int dy[4] = {0, 0, 1, -1};
+        for (int i = 0; i < 4; i++)
+        {
+            int nx = p.x + dx[i];
+            int ny = p.y + dy[i];
+            if (nx < word_xmin || nx > word_xmax ||
+                ny < word_ymin || ny > word_ymax)
+                continue;
+            if (visited[ny * surface->w + nx])
+                continue;
+            if (!is_black(surface, nx, ny))
+                continue;
+            visited[ny * surface->w + nx] = 1;
+            queue[back++] = (struct Point){nx, ny};
+        }
+    }
+    free(queue);
 }
 
 // Isolate the letters from the grid and frame them in purple
 // as closely as possible.
 struct letters_surface *segment_letters(SDL_Surface *surface, int xmin,
         int xmax, int ymin, int ymax, int grid) {
-    int in_letter = 0;
-    int letter_xmin = 0;
-    int threshold = 2; // Tolerance
     struct letters_surface *head_letters = NULL;
-    for (int x = xmin; x <= xmax; x++) {
-        int black_pixels = 0;
-
-        if (SDL_MUSTLOCK(surface)) SDL_LockSurface(surface);
-        Uint32 *pixels = (Uint32 *)surface->pixels;
-        SDL_PixelFormat *format = surface->format;
-        Uint8 r, g, b;
-        for (int y = ymin; y <= ymax; y++) {
-            if (x >= 0 && x < surface->w && y >= 0 && y < surface->h) {
-                SDL_GetRGB(pixels[y * surface->w + x], format, &r, &g, &b);
-                if (r == 0) black_pixels++;
+    int size = surface->w * surface->h;
+    char *visited = calloc(size, sizeof(char));
+    if (!visited)
+        return NULL;
+    if (SDL_MUSTLOCK(surface))
+        SDL_LockSurface(surface);
+    for (int y = ymin; y <= ymax; y++) {
+        for (int x = xmin; x <= xmax; x++) {
+            if (visited[y * surface->w + x])
+                continue;
+            if (!is_black(surface, x, y))
+                continue;
+            int lxmin, lxmax, lymin, lymax;
+            bfs_component(surface, x, y, visited, &lxmin, &lxmax, &lymin,
+                &lymax, xmin, xmax, ymin, ymax);
+            int area = (lxmax - lxmin + 1)*(lymax - lymin + 1);
+            if (area < 20)
+                continue;
+            SDL_Surface *subsurface = create_letter_surface(surface, lxmin,
+                    lymin, lxmax - lxmin + 1, lymax - lymin + 1);
+            if (!subsurface)
+                continue;
+            struct letters_surface *new_letter =
+                initialize_letters_surface(subsurface);
+            if (!new_letter) {
+                SDL_FreeSurface(subsurface);
+                free(visited);
+                if (SDL_MUSTLOCK(surface))
+                    SDL_UnlockSurface(surface);
+                return NULL;
             }
-        }
-        if (SDL_MUSTLOCK(surface)) SDL_UnlockSurface(surface);
-
-        if (black_pixels > threshold) {
-            if (!in_letter) {
-                in_letter = 1;
-                letter_xmin = x;
+            insert_letters_surface(&head_letters, new_letter);
+            if (grid) {
+                draw_rectangle(surface,lxmin,lxmax,lymin,lymax,128,128,0);
             }
-        } else {
-            if (in_letter) {
-                in_letter = 0;
-                int l_xmin = letter_xmin, l_xmax = x - 1;
-                int l_ymin = ymin, l_ymax = ymax;
-                crop_box(surface, &l_xmin, &l_xmax, &l_ymin, &l_ymax);
-                SDL_Surface *subsurface = create_letter_surface(surface,
-                    l_xmin, l_ymin, l_xmax-l_xmin+1, l_ymax-l_ymin+1);
-                struct letters_surface *new_letter = 
-                    initialize_letters_surface(subsurface);
-                if(!new_letter) {
-                    SDL_FreeSurface(subsurface);
-                    return NULL; // error case
-                }
-                insert_letters_surface(&head_letters, new_letter);
-                if(grid) {
-                    draw_rectangle(surface, l_xmin, l_xmax, l_ymin, l_ymax,
-                               128, 128, 0);
-                } else {
-                    draw_rectangle(surface, l_xmin, l_xmax, l_ymin, l_ymax,
-                               128, 0, 128);
-                }
+            else {
+                draw_rectangle(surface,lxmin,lxmax,lymin,lymax,128,0,128);
             }
         }
     }
-    // Last letter
-    if (in_letter) {
-        int l_xmin = letter_xmin, l_xmax = xmax;
-        int l_ymin = ymin, l_ymax = ymax;
-        crop_box(surface, &l_xmin, &l_xmax, &l_ymin, &l_ymax);
-        SDL_Surface *subsurface2 = create_letter_surface(surface, l_xmin,
-            l_ymin, l_xmax-l_xmin+1, l_ymax-l_ymin+1);
-        struct letters_surface *new_letter2 = 
-            initialize_letters_surface(subsurface2);
-        if(!new_letter2) {
-            SDL_FreeSurface(subsurface2);
-            return NULL; //error case
-        }
-        insert_letters_surface(&head_letters, new_letter2);
-        if(grid) {
-            draw_rectangle(surface, l_xmin, l_xmax, l_ymin, l_ymax,
-                        128, 128, 0);
-        } else {
-            draw_rectangle(surface, l_xmin, l_xmax, l_ymin, l_ymax,
-                        128, 0, 128);
-        }
-    }
+    if (SDL_MUSTLOCK(surface))
+        SDL_UnlockSurface(surface);
+    free(visited);
     return head_letters;
 }
 
@@ -171,10 +252,10 @@ struct head_surface *segment_word_list(SDL_Surface *surface, int xmin,
                 crop_box(surface, &w_xmin, &w_xmax, &w_ymin, &w_ymax);
                 w_xmin--, w_ymin--; 
                 w_xmax++, w_ymax++; // Adding a margin of 1 pixel
-                draw_rectangle(surface, w_xmin, w_xmax, w_ymin, w_ymax, 0, 
-                    255, 0);
                 struct letters_surface *head_letter = segment_letters(surface,
                     w_xmin, w_xmax, w_ymin, w_ymax, grid);
+                draw_rectangle(surface, w_xmin, w_xmax, w_ymin, w_ymax, 0, 
+                    255, 0);
                 if(!head_letter) {
                     free_head_surface(head);
                     return NULL; //error case
@@ -194,9 +275,9 @@ struct head_surface *segment_word_list(SDL_Surface *surface, int xmin,
         crop_box(surface, &w_xmin, &w_xmax, &w_ymin, &w_ymax);
         w_xmin--, w_ymin--; 
         w_xmax++, w_ymax++; // Adding a margin of 1 pixel
-        draw_rectangle(surface, w_xmin, w_xmax, w_ymin, w_ymax, 0, 255, 0);
         struct letters_surface *head_letter2 = segment_letters(surface, w_xmin,
             w_xmax, w_ymin, w_ymax, grid);
+        draw_rectangle(surface, w_xmin, w_xmax, w_ymin, w_ymax, 0, 255, 0);
         if(!head_letter2) {
             free_head_surface(head);
             return NULL; //error case
@@ -276,27 +357,6 @@ int compute_cell_margin(int xmin, int xmax, int ymin, int ymax, int *vert_hist,
     if (thickness > max_thickness)
         max_thickness = thickness;
     return max_thickness+1;
-}
-
-//allows the green to be removed in the case without a grid
-void remove_green(SDL_Surface *surface, int xmin, int xmax, int ymin,
-        int ymax) {
-    if (SDL_MUSTLOCK(surface)) SDL_LockSurface(surface);
-    Uint32 *pixels = (Uint32 *)surface->pixels;
-    SDL_PixelFormat *format = surface->format;
-    Uint32 green = SDL_MapRGB(format, 0, 255, 0);
-    Uint32 white = SDL_MapRGB(format, 255, 255, 255);
-    for (int y = ymin; y <= ymax; y++) {
-        if (y < 0 || y >= surface->h) continue;
-        for (int x = xmin; x <= xmax; x++) {
-            if (x < 0 || x >= surface->w) continue;
-            if (pixels[y * surface->w + x] == green) {
-                pixels[y * surface->w + x] = white;
-            }
-        }
-    }
-
-    if (SDL_MUSTLOCK(surface)) SDL_UnlockSurface(surface);
 }
 
 // Isolate the letters from the grid and frame them in yellow
